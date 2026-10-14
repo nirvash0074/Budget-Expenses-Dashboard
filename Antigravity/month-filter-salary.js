@@ -1,3 +1,22 @@
+(function removeSalarySection(){
+  // Remove the visible "Salary Allocation & Savings" section from the DOM
+  function tryRemove() {
+    try {
+      // Find H2 elements and locate the one for Salary Allocation & Savings
+      const h2s = Array.from(document.querySelectorAll('h2'));
+      const target = h2s.find(h => (h.textContent || '').trim().includes('Salary Allocation'));
+      if (!target) return;
+      // The visible section wrapper is a few levels up; remove the nearest ancestor that looks like a section card
+      const section = target.closest('div.bg-[var(--card)]') || target.closest('div');
+      if (section) section.remove();
+    } catch (e) {
+      // silent
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tryRemove); else tryRemove();
+})();
+
 (function(){
   // Normalize month cells to "Month Year" before aggregating
   function normalizeMonthCells() {
