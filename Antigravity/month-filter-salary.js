@@ -1,4 +1,41 @@
 (function(){
+  // Normalize month cells to "Month Year" before aggregating
+  function normalizeMonthCells() {
+    const tbody = document.getElementById('salaryTableBody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.forEach(row => {
+      const cell = row.querySelector('td, th');
+      if (!cell) return;
+      const txt = (cell.textContent || '').trim();
+      if (!txt) return;
+
+      // Attempt to parse the cell text as a Date
+      let d = new Date(txt);
+      if (!isNaN(d)) {
+        cell.textContent = d.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+        return;
+      }
+
+      // If starts with weekday (e.g. "Sat Aug 01 ..."), strip the leading day and try again
+      const stripped = txt.replace(/^[A-Za-z]{3}\s+/, '');
+      d = new Date(stripped);
+      if (!isNaN(d)) {
+        cell.textContent = d.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+        return;
+      }
+
+      // If there's an ISO date inside, extract it
+      const iso = txt.match(/(\d{4}-\d{2}-\d{2})/);
+      if (iso) {
+        d = new Date(iso[1]);
+        if (!isNaN(d)) {
+          cell.textContent = d.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+        }
+      }
+    });
+  }
+
   // Month filter -> Salary section sync
   function parseNumber(txt) {
     if (txt === null || txt === undefined) return 0;
@@ -17,6 +54,9 @@
   }
 
   function updateSalarySection(month) {
+    // Ensure month labels are normalized so matching works reliably
+    normalizeMonthCells();
+
     const tbody = document.getElementById('salaryTableBody');
     const rows = tbody ? Array.from(tbody.querySelectorAll('tr')) : [];
     const monthSelector = document.getElementById('monthSelector');
@@ -71,7 +111,8 @@
     if (!monthSelector) return;
     monthSelector.addEventListener('change', (e) => updateSalarySection(e.target.value));
     // Run once on init
-    updateSalarySection(monthSelector.value || 'all');
+    // Normalize first in case rows contain raw Date strings
+    window.setTimeout(() => updateSalarySection(monthSelector.value || 'all'), 50);
 
     // Allow other code to trigger recalculation after async table render
     window.recalculateSalaryForCurrentMonth = function() {
