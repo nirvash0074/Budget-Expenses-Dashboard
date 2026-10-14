@@ -1,0 +1,2808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Budget & Expense Dashboard</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Default dark theme fallback for standalone browser usage */
+    :root {
+      --background: #0b0f17;
+      --card: #131b2a;
+      --border: #1e293b;
+      --foreground: #f1f5f9;
+      --muted-foreground: #94a3b8;
+      --primary: #10b981;
+      --primary-foreground: #ffffff;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(150, 150, 150, 0.25);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(150, 150, 150, 0.45);
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen p-4 md:p-6 lg:p-8 font-sans selection:bg-[var(--primary)] selection:text-[var(--primary-foreground)] flex flex-col justify-center">
+
+  <!-- ================= AUTH VIEW (LOGIN / REGISTER) ================= -->
+  <div id="authContainer" class="w-full max-w-md mx-auto my-auto space-y-6">
+    
+    <!-- Branding Header -->
+    <div class="text-center space-y-2">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold shadow-md mb-1">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight text-[var(--foreground)]">Finance & Expense Hub</h1>
+      <p class="text-xs sm:text-sm text-[var(--muted-foreground)]">Sign in or register to access your personal dashboard & budget</p>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-xl space-y-5">
+      
+      <!-- Auth Mode Tabs -->
+      <div class="grid grid-cols-2 gap-1 bg-[var(--background)] p-1 rounded-xl border border-[var(--border)]">
+        <button type="button" id="tabSignInBtn" class="py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow-sm transition">Sign In</button>
+        <button type="button" id="tabRegisterBtn" class="py-2 text-xs font-semibold rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition">Create Account</button>
+      </div>
+
+      <!-- Notification Alerts -->
+      <div id="authAlert" class="hidden text-xs p-3 rounded-lg border"></div>
+
+      <!-- FORM 1: SIGN IN -->
+      <form id="signInForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Username</label>
+          <input type="text" id="loginUsername" required placeholder="Enter username (e.g. john)" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Password</label>
+          <div class="relative">
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 pr-10">
+            <button type="button" onclick="togglePasswordVisibility('loginPassword')" class="absolute right-3 top-2.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 text-xs md:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow transition">
+          Sign In to Personal Dashboard
+        </button>
+
+        <!-- Divider & Quick Access Demo -->
+        <div class="pt-2 border-t border-[var(--border)]">
+          <div class="flex items-center justify-between text-xs text-[var(--muted-foreground)] mb-2">
+            <span>Quick 1-Click Access:</span>
+            <span class="font-mono text-[11px]">john / password123</span>
+          </div>
+          <button type="button" id="quickDemoLoginBtn" class="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium bg-[var(--background)] hover:bg-[var(--border)]/30 text-[var(--foreground)] border border-[var(--border)] rounded-lg transition">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <span>Log in as John Alvin (Preloaded Demo)</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- FORM 2: CREATE NEW ACCOUNT -->
+      <form id="registerForm" class="hidden space-y-3.5">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Your Full Name</label>
+          <input type="text" id="regFullName" required placeholder="e.g. John Alvin Baylon" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Choose Username</label>
+          <input type="text" id="regUsername" required placeholder="e.g. jbaylon" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Preferred Currency</label>
+            <select id="regCurrency" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-2.5 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+              <option value="$" selected>USD ($)</option>
+              <option value="₱">PHP (₱)</option>
+              <option value="€">EUR (€)</option>
+              <option value="£">GBP (£)</option>
+              <option value="¥">JPY (¥)</option>
+              <option value="C$">CAD (C$)</option>
+              <option value="A$">AUD (A$)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Create Password</label>
+            <input type="password" id="regPassword" required placeholder="••••••••" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 text-xs md:text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow transition mt-1">
+          Create Account & Start Dashboard
+        </button>
+
+        <p class="text-[11px] text-[var(--muted-foreground)] text-center">
+          All your categories, budgets, and expenses will be saved strictly to your personal profile.
+        </p>
+      </form>
+
+    </div>
+  </div>
+
+
+  <!-- ================= DASHBOARD VIEW (WHEN LOGGED IN) ================= -->
+  <div id="appContainer" class="hidden max-w-7xl mx-auto space-y-6 w-full">
+    
+    <!-- Top Bar: Header, User Profile & Global Controls -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-xl shadow-sm">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground)]">Finance & Expense Tracker</h1>
+              <span id="dashboardBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-semibold">Personal</span>
+            </div>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)]">Track monthly budgets, custom categories, and cash flow</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <!-- Currency Selector -->
+        <select id="currencySelector" class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 text-xs md:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer">
+          <option value="$">USD ($)</option>
+          <option value="₱">PHP (₱)</option>
+          <option value="€">EUR (€)</option>
+          <option value="£">GBP (£)</option>
+          <option value="¥">JPY (¥)</option>
+          <option value="C$">CAD (C$)</option>
+          <option value="A$">AUD (A$)</option>
+        </select>
+
+        <!-- Month Filter -->
+        <select id="monthSelector" class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 text-xs md:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer">
+          <option value="all">All Months</option>
+          <option value="2026-10" selected>October 2026</option>
+          <option value="2026-09">September 2026</option>
+          <option value="2026-08">August 2026</option>
+        </select>
+
+        <!-- Action: Google Sheets Database -->
+        <button id="openSheetsModalBtn" class="flex items-center gap-1.5 bg-[var(--card)] hover:bg-[var(--border)]/30 text-[var(--foreground)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-xs md:text-sm font-medium transition shadow-sm">
+          <span id="sheetStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span class="font-semibold text-emerald-600 dark:text-emerald-400">Google Sheets DB</span>
+        </button>
+
+        <!-- Action: Manage Categories -->
+        <button id="openCategoryModalBtn" class="flex items-center gap-1.5 bg-[var(--card)] hover:bg-[var(--border)]/30 text-[var(--foreground)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-xs md:text-sm font-medium transition shadow-sm">
+          <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+          </svg>
+          <span>Categories (A-Z)</span>
+        </button>
+
+        <!-- Action: Budget Targets -->
+        <button id="openBudgetModalBtn" class="flex items-center gap-1.5 bg-[var(--card)] hover:bg-[var(--border)]/30 text-[var(--foreground)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-xs md:text-sm font-medium transition shadow-sm">
+          <svg class="w-4 h-4 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+          </svg>
+          <span>Budgets</span>
+        </button>
+
+        <!-- Action: Add Transaction -->
+        <button id="openAddModalBtn" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3.5 py-1.5 text-xs md:text-sm font-medium transition shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>Add Record</span>
+        </button>
+
+        <!-- User Profile Badge & Logout -->
+        <div class="flex items-center gap-2 pl-2 border-l border-[var(--border)] ml-1">
+          <div class="flex items-center gap-2 bg-[var(--card)] border border-[var(--border)] rounded-xl py-1 px-2.5 shadow-sm">
+            <div id="userAvatar" class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center uppercase shadow-inner">JB</div>
+            <div class="text-left hidden lg:block">
+              <div id="userNameLabel" class="text-xs font-semibold text-[var(--foreground)] truncate max-w-[110px]">User Name</div>
+              <div id="userHandleLabel" class="text-[10px] text-[var(--muted-foreground)]">@user</div>
+            </div>
+            <button id="logoutBtn" title="Log out of this dashboard" class="p-1 rounded-md text-[var(--muted-foreground)] hover:text-rose-500 hover:bg-rose-500/10 transition ml-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Google Sheet Live Status Banner (if connected) -->
+    <div id="sheetsSyncBanner" class="hidden items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-[var(--foreground)] font-medium">Connected to Google Sheets Database:</span>
+        <span id="bannerSheetName" class="font-bold text-emerald-600 dark:text-emerald-400">Spreadsheet</span>
+        <span id="bannerSyncTime" class="text-[var(--muted-foreground)] ml-1">(Synced just now)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="quickPullBtn" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Refresh from Sheet</span>
+        </button>
+        <a id="bannerSheetLink" href="#" target="_blank" class="text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:underline ml-2">Open Sheet ↗</a>
+      </div>
+    </div>
+
+    <!-- KPI Summary Grid (4 Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Total Budget -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">Total Monthly Budget</span>
+          <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-[var(--foreground)] tracking-tight" id="kpiTotalBudget">$0.00</div>
+        <div class="mt-2 text-xs text-[var(--muted-foreground)] flex items-center gap-1">
+          <span>Target for active period</span>
+        </div>
+      </div>
+
+      <!-- Total Expenses -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">Total Expenses</span>
+          <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-rose-500 tracking-tight" id="kpiTotalExpenses">$0.00</div>
+        <div class="mt-2 text-xs text-[var(--muted-foreground)] flex items-center gap-1">
+          <span id="kpiBudgetUsedBadge" class="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-rose-500/10 text-rose-500">0%</span>
+          <span>of monthly budget used</span>
+        </div>
+      </div>
+
+      <!-- Remaining Balance -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">Remaining Budget</span>
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-emerald-500 tracking-tight" id="kpiRemainingBudget">$0.00</div>
+        <div class="mt-2 text-xs text-[var(--muted-foreground)] flex items-center gap-1" id="kpiBudgetStatusText">
+          <span>Safe & On track</span>
+        </div>
+      </div>
+
+      <!-- Total Income & Net Savings -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">Net Cash Flow</span>
+          <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-[var(--foreground)] tracking-tight" id="kpiNetCashflow">$0.00</div>
+        <div class="mt-2 text-xs text-[var(--muted-foreground)] flex items-center justify-between">
+          <span>Income: <strong id="kpiTotalIncome" class="text-emerald-500 font-semibold">$0.00</strong></span>
+          <span id="kpiSavingsRateBadge" class="text-xs font-medium text-emerald-600 dark:text-emerald-400">0% Saved</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Overall Budget Progress Bar -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-2 text-xs md:text-sm">
+        <span class="font-medium text-[var(--foreground)]">Monthly Spending Pace</span>
+        <span class="text-[var(--muted-foreground)]" id="overallPaceLabel">0% spent ($0.00 of $0.00)</span>
+      </div>
+      <div class="w-full bg-[var(--border)]/40 rounded-full h-3 overflow-hidden p-0.5">
+        <div id="overallProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+      </div>
+      <div class="flex justify-between items-center text-[11px] text-[var(--muted-foreground)] mt-2">
+        <span>0%</span>
+        <span>50% Budget</span>
+        <span>75% Caution</span>
+        <span>100% Limit</span>
+      </div>
+    </div>
+
+    <!-- ================= SALARY ALLOCATION & SAVINGS (10 MONTHS) ================= -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-5">
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-[var(--foreground)] tracking-tight">Salary Allocation &amp; Savings</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Combined 15th and 30th cutoff income across 10 months</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="openSalaryModalBtn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/25 transition shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+            </svg>
+            <span>Edit Salary</span>
+          </button>
+          <button id="toggleSalaryCollapseBtn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] bg-[var(--background)] border border-[var(--border)] transition">
+            <svg id="salaryChevronIcon" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+            <span id="salaryCollapseText">Hide</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Collapsible Body -->
+      <div id="salaryBodyContainer" class="space-y-5 transition-all duration-300">
+        <!-- 6 KPI Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Income 15th -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+            <div class="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-1.5">INCOME 15TH</div>
+            <div id="salKpiIncome15th" class="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight">₱0.00</div>
+          </div>
+
+          <!-- Card 2: Income 30th -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+            <div class="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-1.5">INCOME 30TH</div>
+            <div id="salKpiIncome30th" class="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight">₱0.00</div>
+          </div>
+
+          <!-- Card 3: Total Income -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+            <div class="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-1.5">TOTAL INCOME</div>
+            <div id="salKpiTotalIncome" class="text-xl sm:text-2xl font-bold text-sky-400 tracking-tight">₱0.00</div>
+          </div>
+
+          <!-- Card 4: Remaining (Budget - Actual) -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+            <div class="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-1.5">REMAINING (BUDGET – ACTUAL)</div>
+            <div id="salKpiRemaining" class="text-xl sm:text-2xl font-bold text-emerald-400 tracking-tight">₱0.00</div>
+            <div id="salKpiRemainingSub" class="text-xs text-[var(--muted-foreground)] mt-1">0% remaining of budget</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Card 5: Projected Savings (Income - Total Budget) -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+            <div class="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-1.5">PROJECTED SAVINGS (Income – Total Budget)</div>
+            <div id="salKpiProjSavings" class="text-xl sm:text-2xl font-bold text-emerald-400 tracking-tight">₱0.00</div>
+            <div id="salKpiProjSavingsSub" class="text-xs text-[var(--muted-foreground)] mt-1">0% of income</div>
+          </div>
+
+          <!-- Card 6: Actual Savings (Income - Actual Expenses) -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+            <div class="text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-1.5">ACTUAL SAVINGS (Income – Actual Expenses)</div>
+            <div id="salKpiActualSavings" class="text-xl sm:text-2xl font-bold text-emerald-400 tracking-tight">₱0.00</div>
+            <div id="salKpiActualSavingsSub" class="text-xs text-[var(--muted-foreground)] mt-1">0% of income saved</div>
+          </div>
+        </div>
+
+        <!-- 10-Month Breakdown Table -->
+        <div class="overflow-x-auto rounded-xl border border-[var(--border)]">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-[var(--background)] text-[var(--muted-foreground)] font-semibold uppercase text-[11px] border-b border-[var(--border)]">
+              <tr>
+                <th class="py-3 px-4 text-left whitespace-nowrap">MONTH</th>
+                <th class="py-3 px-4 text-right whitespace-nowrap">INCOME 15TH</th>
+                <th class="py-3 px-4 text-right whitespace-nowrap">INCOME 30TH</th>
+                <th class="py-3 px-4 text-right whitespace-nowrap">TOTAL BUDGET</th>
+                <th class="py-3 px-4 text-right whitespace-nowrap">ACTUAL EXPENSES</th>
+                <th class="py-3 px-4 text-right whitespace-nowrap">REMAINING</th>
+                <th class="py-3 px-4 text-right whitespace-nowrap">% REM.</th>
+                <th class="py-3 px-4 text-right whitespace-nowrap">PROJECTED SAVINGS</th>
+                <th class="py-3 px-4 text-right whitespace-nowrap">ACTUAL SAVINGS</th>
+              </tr>
+            </thead>
+            <tbody id="salaryTableBody" class="divide-y divide-[var(--border)]/40 font-mono text-xs">
+              <!-- Dynamically populated rows -->
+            </tbody>
+            <tfoot class="bg-[var(--background)] font-mono text-xs font-bold border-t-2 border-[var(--border)]">
+              <tr id="salaryTableFooter">
+                <!-- Dynamically populated summary total row -->
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section: Donut + Spending Trend -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Donut Chart: Expense Breakdown -->
+      <div class="lg:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-base font-semibold text-[var(--foreground)]">Expenses by Category</h2>
+          <span class="text-xs text-[var(--muted-foreground)]" id="chartTotalLabel">Total: $0.00</span>
+        </div>
+        
+        <div class="relative flex items-center justify-center my-auto min-h-[240px]">
+          <canvas id="categoryDonutChart" width="260" height="260" class="cursor-pointer max-w-[260px] max-h-[260px]"></canvas>
+          <div id="donutCenterInfo" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+            <span class="text-xs text-[var(--muted-foreground)] font-medium" id="donutCenterCategory">Top Category</span>
+            <span class="text-lg font-bold text-[var(--foreground)] tracking-tight" id="donutCenterAmount">$0.00</span>
+            <span class="text-[11px] text-emerald-500 font-semibold" id="donutCenterPct">0%</span>
+          </div>
+        </div>
+
+        <!-- Legend / List (Alphabetical) -->
+        <div id="donutLegend" class="mt-4 grid grid-cols-2 gap-2 text-xs max-h-[140px] overflow-y-auto pr-1">
+          <!-- Dynamically populated alphabetically -->
+        </div>
+      </div>
+
+      <!-- Category Budgets (Alphabetical) -->
+      <div class="lg:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm flex flex-col">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-semibold text-[var(--foreground)]">Category Budget vs Actual</h2>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-[var(--border)]/40 text-[var(--muted-foreground)] font-medium">A–Z</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Safe
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 ml-2"></span> &gt;80%
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 ml-2"></span> Exceeded
+          </div>
+        </div>
+
+        <div id="categoryBudgetList" class="space-y-3.5 my-auto overflow-y-auto max-h-[380px] pr-1">
+          <!-- Dynamically populated category progress bars in alphabetical order -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Spending Over Time Chart -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div>
+          <h2 class="text-base font-semibold text-[var(--foreground)]">Daily Expenses Trend</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Daily expense distribution across active period</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs px-2.5 py-1 rounded bg-[var(--border)]/40 text-[var(--foreground)] font-medium">Daily Outflow</span>
+        </div>
+      </div>
+      <div class="relative w-full h-[220px]">
+        <canvas id="dailyTrendChart" class="w-full h-full"></canvas>
+      </div>
+    </div>
+
+    <!-- Transaction Management Section -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-4">
+      
+      <!-- Toolbar: Title, View Switcher, Search, Filter, Export -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-semibold text-[var(--foreground)]">Transaction Database</h2>
+            <!-- View Mode Switcher -->
+            <div class="inline-flex rounded-lg border border-[var(--border)] p-0.5 bg-[var(--background)]">
+              <button type="button" id="viewModeCardBtn" class="px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-600 text-white transition">Dashboard View</button>
+              <button type="button" id="viewModeSheetBtn" class="px-2.5 py-1 text-xs font-medium rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition">Sheets Table View</button>
+            </div>
+          </div>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Manage and audit your logged records with Google Sheets synchronization</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Search Input -->
+          <div class="relative">
+            <svg class="w-4 h-4 absolute left-2.5 top-2.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search transactions..." class="bg-[var(--background)] border border-[var(--border)] rounded-lg pl-8 pr-3 py-1.5 text-xs md:text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 w-44 sm:w-56">
+          </div>
+
+          <!-- Category Filter (Alphabetical) -->
+          <select id="filterCategory" class="bg-[var(--background)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer">
+            <option value="all">All Categories (A–Z)</option>
+          </select>
+
+          <!-- Type Filter -->
+          <select id="filterType" class="bg-[var(--background)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer">
+            <option value="all">All Types</option>
+            <option value="expense">Expenses Only</option>
+            <option value="income">Income Only</option>
+          </select>
+
+          <!-- CSV Export -->
+          <button id="exportCsvBtn" title="Export as CSV file" class="flex items-center gap-1.5 bg-[var(--background)] hover:bg-[var(--border)]/40 text-[var(--foreground)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 text-xs font-medium transition">
+            <svg class="w-3.5 h-3.5 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>Export CSV</span>
+          </button>
+
+          <!-- Reset / Demo data for current user -->
+          <button id="resetDemoBtn" title="Restore sample data for this profile" class="flex items-center gap-1 bg-[var(--background)] hover:bg-[var(--border)]/40 text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)] rounded-lg px-2.5 py-1.5 text-xs font-medium transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span>Reset Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Transactions Standard Table -->
+      <div id="standardTableView" class="overflow-x-auto rounded-lg border border-[var(--border)]">
+        <table class="w-full text-left text-xs md:text-sm">
+          <thead class="bg-[var(--background)] border-b border-[var(--border)] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider text-[11px]">
+            <tr>
+              <th class="py-3 px-4">Date</th>
+              <th class="py-3 px-4">Description</th>
+              <th class="py-3 px-4">Category</th>
+              <th class="py-3 px-4">Payment Method</th>
+              <th class="py-3 px-4 text-right">Amount</th>
+              <th class="py-3 px-4 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTableBody" class="divide-y divide-[var(--border)]">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Google Sheets Database Raw Table View (toggleable) -->
+      <div id="sheetsTableView" class="hidden overflow-x-auto rounded-lg border border-emerald-500/30">
+        <div class="bg-emerald-600 text-white px-4 py-2 text-xs font-semibold flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm0-4H6v-2h6v2zm0-4H6V7h6v2zm6 8h-4v-2h4v2zm0-4h-4v-2h4v2zm0-4h-4V7h4v2z"/>
+            </svg>
+            <span>Google Sheet Database Table: [Transactions]</span>
+          </div>
+          <span class="text-[11px] opacity-90">Columns mapped directly to Spreadsheet cells</span>
+        </div>
+        <table class="w-full text-left text-xs font-mono">
+          <thead class="bg-emerald-900/30 border-b border-emerald-500/20 text-emerald-400 font-semibold uppercase text-[11px]">
+            <tr>
+              <th class="py-2.5 px-3">Col A: ID</th>
+              <th class="py-2.5 px-3">Col B: User ID</th>
+              <th class="py-2.5 px-3">Col C: Date</th>
+              <th class="py-2.5 px-3">Col D: Type</th>
+              <th class="py-2.5 px-3">Col E: Category</th>
+              <th class="py-2.5 px-3">Col F: Description</th>
+              <th class="py-2.5 px-3 text-right">Col G: Amount</th>
+              <th class="py-2.5 px-3">Col H: Method</th>
+              <th class="py-2.5 px-3">Col I: Notes</th>
+            </tr>
+          </thead>
+          <tbody id="sheetsRawTableBody" class="divide-y divide-[var(--border)] bg-[var(--background)]">
+            <!-- Dynamically populated raw sheet rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination / Count Footer -->
+      <div class="flex items-center justify-between text-xs text-[var(--muted-foreground)] pt-2">
+        <span id="transactionCountLabel">Showing 0 transactions</span>
+        <span class="italic text-[11px]" id="dbModeFooterLabel">Database Mode: Local Offline Storage</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================= MODAL: GOOGLE SHEETS DATABASE MANAGER ================= -->
+  <div id="sheetsModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm0-4H6v-2h6v2zm0-4H6V7h6v2zm6 8h-4v-2h4v2zm0-4h-4v-2h4v2zm0-4h-4V7h4v2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-[var(--foreground)]">Google Sheets Database Setup</h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Use Google Sheets as your live, permanent cloud database</p>
+          </div>
+        </div>
+        <button id="closeSheetsModalBtn" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Live Connection Status Box -->
+      <div id="connectionStatusBox" class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span id="modalStatusDot" class="w-3 h-3 rounded-full bg-slate-400"></span>
+          <div>
+            <div id="modalStatusTitle" class="text-xs font-bold text-[var(--foreground)]">Local Storage Mode</div>
+            <div id="modalStatusDesc" class="text-[11px] text-[var(--muted-foreground)]">No Google Sheet URL connected. Transactions save locally in browser.</div>
+          </div>
+        </div>
+        <a id="modalExternalSheetLink" href="#" target="_blank" class="hidden text-xs text-emerald-500 hover:underline font-semibold flex items-center gap-1">
+          <span>Open Sheet</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+        </a>
+      </div>
+
+      <!-- Endpoint URL Input & Actions -->
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-[var(--foreground)] mb-1">Google Apps Script Web App URL</label>
+          <div class="flex gap-2">
+            <input type="url" id="sheetsApiUrlInput" value="https://script.google.com/macros/s/AKfycbzMxfz2q1LPgsikhv6MJGtevGL8XGPxZSVHAaIZvrBDujJJkdPwoNTOwMBtZ46suoUQ/exec" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40 font-mono">
+            <button type="button" id="testSaveSheetsBtn" class="px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm transition whitespace-nowrap">
+              Connect & Test
+            </button>
+          </div>
+        </div>
+
+        <!-- Sync Controls -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button type="button" id="pullFromSheetBtn" class="flex items-center justify-center gap-1.5 py-2 text-xs font-medium bg-[var(--background)] hover:bg-[var(--border)]/40 text-[var(--foreground)] border border-[var(--border)] rounded-lg transition">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>Pull Data from Sheet</span>
+          </button>
+          <button type="button" id="pushToSheetBtn" class="flex items-center justify-center gap-1.5 py-2 text-xs font-medium bg-[var(--background)] hover:bg-[var(--border)]/40 text-[var(--foreground)] border border-[var(--border)] rounded-lg transition">
+            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            <span>Push All to Sheet</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="autoSyncCheck" checked class="rounded border-[var(--border)] text-emerald-600 focus:ring-emerald-500">
+          <label for="autoSyncCheck" class="text-xs text-[var(--muted-foreground)]">Auto-sync transactions and categories to Google Sheet in real time</label>
+        </div>
+      </div>
+
+      <!-- Quick 4-Step Setup Instructions -->
+      <div class="border border-[var(--border)] rounded-xl p-4 bg-[var(--background)] space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center text-[10px]">?</span>
+            <span>How to connect your Google Sheet in 2 Minutes</span>
+          </span>
+          <button type="button" id="copyAppsScriptBtn" class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            <span>Copy Apps Script Code</span>
+          </button>
+        </div>
+
+        <ol class="list-decimal list-inside text-xs text-[var(--muted-foreground)] space-y-1.5 leading-relaxed">
+          <li>Create a new spreadsheet at <a href="https://sheets.new" target="_blank" class="text-emerald-500 underline font-medium">sheets.new</a>.</li>
+          <li>In the menu, click <strong>Extensions &gt; Apps Script</strong>.</li>
+          <li>Paste the code from <code class="text-emerald-500 font-mono">google_apps_script.js</code> (or click "Copy Apps Script Code" above) and click <strong>Save</strong>.</li>
+          <li>Click <strong>Deploy &gt; New deployment</strong>, choose <strong>Web app</strong>, set <em>Who has access</em> to <strong>Anyone</strong>, click <strong>Deploy</strong>, and paste the resulting Web app URL into the box above!</li>
+        </ol>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-[var(--border)]">
+        <button type="button" id="disconnectSheetsBtn" class="text-xs text-rose-500 hover:underline">Disconnect & Use Local Mode</button>
+        <button type="button" id="doneSheetsModalBtn" class="px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Manage / Create Categories (Alphabetical) -->
+  <div id="categoryModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-[var(--foreground)]">Expense Categories (A–Z)</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">Create your own custom categories with budget limits</p>
+        </div>
+        <button id="closeCategoryModalBtn" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Create New Category Form -->
+      <form id="createCategoryForm" class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-3.5 space-y-3">
+        <div class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>Create New Category</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+          <div class="sm:col-span-7">
+            <input type="text" id="newCategoryName" required placeholder="Category name (e.g. Pet Care, Travel)" class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+          </div>
+          <div class="sm:col-span-5 relative">
+            <span class="absolute left-2.5 top-1.5 text-xs text-[var(--muted-foreground)] font-bold modalCurrencyPrefix">$</span>
+            <input type="number" id="newCategoryBudget" step="10" min="0" placeholder="Monthly Budget" class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg pl-6 pr-2 py-1.5 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" class="flex items-center gap-1 px-4 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>Add Category</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Alphabetical Category List -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-xs text-[var(--muted-foreground)] px-1">
+          <span class="font-medium">Active Categories (Sorted A–Z)</span>
+          <span id="catListCount">0 Categories</span>
+        </div>
+        <div id="categoryListContainer" class="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+          <!-- Dynamically populated category rows -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end pt-3 border-t border-[var(--border)]">
+        <button type="button" id="doneCategoryModalBtn" class="px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add / Edit Transaction -->
+  <div id="transactionModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <h3 id="modalTitle" class="text-lg font-bold text-[var(--foreground)]">Add Transaction</h3>
+        <button id="closeModalBtn" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form id="transactionForm" class="space-y-3.5">
+        <input type="hidden" id="txId">
+
+        <!-- Type Selector: Expense vs Income -->
+        <div class="grid grid-cols-2 gap-2 bg-[var(--background)] p-1 rounded-lg border border-[var(--border)]">
+          <button type="button" id="typeExpenseBtn" class="py-1.5 text-xs font-semibold rounded-md bg-rose-500 text-white transition">Expense</button>
+          <button type="button" id="typeIncomeBtn" class="py-1.5 text-xs font-semibold rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition">Income</button>
+        </div>
+        <input type="hidden" id="txType" value="expense">
+
+        <!-- Description -->
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Description</label>
+          <input type="text" id="txDesc" required placeholder="e.g., Grocery Shopping, Monthly Rent" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+        </div>
+
+        <!-- Amount & Date -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Amount</label>
+            <div class="relative">
+              <span id="formCurrencyPrefix" class="absolute left-3 top-2 text-xs md:text-sm text-[var(--muted-foreground)] font-bold">$</span>
+              <input type="number" id="txAmount" required step="0.01" min="0.01" placeholder="0.00" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg pl-7 pr-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Date</label>
+            <input type="date" id="txDate" required class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+          </div>
+        </div>
+
+        <!-- Category (Alphabetical) with Quick-Add -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-medium text-[var(--muted-foreground)]">Category (A–Z)</label>
+            <button type="button" id="quickAddCategoryToggle" class="text-xs text-emerald-500 hover:underline font-medium flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <span>+ Create Category</span>
+            </button>
+          </div>
+
+          <!-- Inline Quick Add Box (collapsible) -->
+          <div id="inlineQuickAddBox" class="hidden mb-2 p-2 rounded-lg bg-[var(--background)] border border-emerald-500/30 flex items-center gap-2">
+            <input type="text" id="quickCatInput" placeholder="New category name..." class="flex-1 bg-[var(--card)] border border-[var(--border)] rounded px-2.5 py-1 text-xs text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <button type="button" id="quickCatConfirmBtn" class="px-2.5 py-1 text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white rounded">Add</button>
+            <button type="button" id="quickCatCancelBtn" class="px-2 py-1 text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Cancel</button>
+          </div>
+
+          <select id="txCategory" required class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+            <!-- Dynamically populated in alphabetical order -->
+          </select>
+        </div>
+
+        <!-- Payment Method -->
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Payment Method</label>
+          <select id="txPaymentMethod" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+            <option value="Credit Card">Credit Card</option>
+            <option value="Debit Card">Debit Card</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cash">Cash</option>
+            <option value="E-Wallet">E-Wallet (PayPal/Venmo/GCash)</option>
+          </select>
+        </div>
+
+        <!-- Notes / Remarks -->
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Notes (Optional)</label>
+          <input type="text" id="txNotes" placeholder="Additional details or tag" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs md:text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border)]">
+          <button type="button" id="cancelModalBtn" class="px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] rounded-lg transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm transition">Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Set Category Budgets (Alphabetical) -->
+  <div id="budgetModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-[var(--foreground)]">Monthly Category Budgets (A–Z)</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">Set spending limits for each category in alphabetical order</p>
+        </div>
+        <button id="closeBudgetModalBtn" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div id="budgetInputsContainer" class="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+        <!-- Dynamically generated budget inputs in alphabetical order -->
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+        <div class="text-xs text-[var(--muted-foreground)]">
+          Total Target: <span id="budgetModalTotal" class="font-bold text-[var(--foreground)]">$0.00</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="cancelBudgetBtn" class="px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] rounded-lg transition">Cancel</button>
+          <button type="button" id="saveBudgetsBtn" class="px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm transition">Apply Budgets</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Salary & 10-Month Allocation -->
+  <div id="salaryModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-4xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-[var(--foreground)]">Edit Salary &amp; Budget Allocation</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">Configure semi-monthly cutoffs (15th &amp; 30th) and monthly budgets across 10 months</p>
+        </div>
+        <button id="closeSalaryModalBtn" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Quick Preset Apply -->
+      <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-3.5 space-y-2.5">
+        <div class="text-xs font-semibold text-[var(--foreground)] flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span>Quick Fill Semi-Monthly Income</span>
+          </span>
+          <span class="text-[11px] text-[var(--muted-foreground)] font-normal">Apply standard cutoffs to all rows below</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+          <div>
+            <label class="block text-[11px] text-[var(--muted-foreground)] mb-1">15th Cutoff (<span class="salaryCurrencyLabel">₱</span>)</label>
+            <input type="number" id="quickSalary15th" step="0.01" value="31062.58" placeholder="31062.58" class="w-full bg-[var(--card)] border border-[var(--border)] rounded px-2.5 py-1.5 text-xs text-[var(--foreground)] focus:ring-1 focus:ring-emerald-500 font-mono">
+          </div>
+          <div>
+            <label class="block text-[11px] text-[var(--muted-foreground)] mb-1">30th Cutoff (<span class="salaryCurrencyLabel">₱</span>)</label>
+            <input type="number" id="quickSalary30th" step="0.01" value="30544.21" placeholder="30544.21" class="w-full bg-[var(--card)] border border-[var(--border)] rounded px-2.5 py-1.5 text-xs text-[var(--foreground)] focus:ring-1 focus:ring-emerald-500 font-mono">
+          </div>
+          <div>
+            <label class="block text-[11px] text-[var(--muted-foreground)] mb-1">Monthly Budget (<span class="salaryCurrencyLabel">₱</span>)</label>
+            <input type="number" id="quickSalaryBudget" step="0.01" value="36000.00" placeholder="36000.00" class="w-full bg-[var(--card)] border border-[var(--border)] rounded px-2.5 py-1.5 text-xs text-[var(--foreground)] focus:ring-1 focus:ring-emerald-500 font-mono">
+          </div>
+          <div class="flex items-end">
+            <button type="button" id="applyQuickSalaryBtn" class="w-full py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded transition shadow-sm">
+              Apply to Empty
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Month by Month Table Inputs -->
+      <div class="overflow-x-auto rounded-xl border border-[var(--border)]">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-[var(--background)] text-[var(--muted-foreground)] font-semibold uppercase text-[11px] border-b border-[var(--border)]">
+            <tr>
+              <th class="py-2.5 px-3">Month</th>
+              <th class="py-2.5 px-3 text-right">15th Cutoff Income</th>
+              <th class="py-2.5 px-3 text-right">30th Cutoff Income</th>
+              <th class="py-2.5 px-3 text-right">Total Budget</th>
+              <th class="py-2.5 px-3 text-right">Actual Expenses</th>
+              <th class="py-2.5 px-3 text-center">Expense Source</th>
+            </tr>
+          </thead>
+          <tbody id="salaryModalInputsBody" class="divide-y divide-[var(--border)]/40 bg-[var(--card)] font-mono text-xs">
+            <!-- Dynamically populated input rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+        <button type="button" id="resetSalaryDefaultsBtn" class="text-xs text-[var(--muted-foreground)] hover:text-emerald-500 transition">Restore Screenshot Sample Data</button>
+        <div class="flex items-center gap-2">
+          <button type="button" id="cancelSalaryModalBtn" class="px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] rounded-lg transition">Cancel</button>
+          <button type="button" id="saveSalarySettingsBtn" class="px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow-sm transition">Save Salary Allocation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Embedded Dashboard Logic -->
+  <script>
+    // Initial sample dataset
+    const DEFAULT_EXPENSE_CATEGORIES = [
+      'Entertainment',
+      'Food & Dining',
+      'Groceries',
+      'Health',
+      'Housing',
+      'Other',
+      'Shopping',
+      'Transportation',
+      'Utilities'
+    ];
+
+    const DEFAULT_INCOME_CATEGORIES = [
+      'Freelance',
+      'Investments',
+      'Other Income',
+      'Salary'
+    ];
+
+    const DEFAULT_BUDGETS = {
+      'Entertainment': 200,
+      'Food & Dining': 400,
+      'Groceries': 550,
+      'Health': 150,
+      'Housing': 1200,
+      'Other': 150,
+      'Shopping': 250,
+      'Transportation': 250,
+      'Utilities': 280
+    };
+
+    const DEFAULT_TRANSACTIONS = [
+      { id: '1', date: '2026-10-01', desc: 'Monthly Apartment Rent', amount: 1200.00, type: 'expense', category: 'Housing', method: 'Bank Transfer', notes: 'Monthly fixed' },
+      { id: '2', date: '2026-10-02', desc: 'Whole Foods Market', amount: 164.20, type: 'expense', category: 'Groceries', method: 'Credit Card', notes: 'Weekly grocery run' },
+      { id: '3', date: '2026-10-03', desc: 'Electric & Gas Utility', amount: 118.50, type: 'expense', category: 'Utilities', method: 'Bank Transfer', notes: 'Power bill' },
+      { id: '4', date: '2026-10-05', desc: 'High-speed Fiber Internet', amount: 65.00, type: 'expense', category: 'Utilities', method: 'Credit Card', notes: 'Work from home' },
+      { id: '5', date: '2026-10-06', desc: 'Sushi Dinner with Team', amount: 84.00, type: 'expense', category: 'Food & Dining', method: 'Debit Card', notes: 'Social outing' },
+      { id: '6', date: '2026-10-08', desc: 'Gas Station Refill', amount: 54.00, type: 'expense', category: 'Transportation', method: 'Credit Card', notes: 'Commute' },
+      { id: '7', date: '2026-10-09', desc: 'Pharmacy & Vitamins', amount: 42.80, type: 'expense', category: 'Health', method: 'Debit Card', notes: 'Monthly supplements' },
+      { id: '8', date: '2026-10-10', desc: 'Cinema & Snacks Weekend', amount: 36.50, type: 'expense', category: 'Entertainment', method: 'Credit Card', notes: 'Movie ticket' },
+      { id: '9', date: '2026-10-12', desc: 'Supermarket Restock', amount: 132.40, type: 'expense', category: 'Groceries', method: 'Debit Card', notes: 'Household essentials' },
+      { id: '10', date: '2026-10-13', desc: 'Warm Autumn Jacket', amount: 119.00, type: 'expense', category: 'Shopping', method: 'Credit Card', notes: 'Clothing sale' },
+      { id: '11', date: '2026-10-14', desc: 'Coffee Shop Study Session', amount: 14.50, type: 'expense', category: 'Food & Dining', method: 'E-Wallet', notes: 'Latte & bagel' },
+      { id: '12', date: '2026-10-01', desc: 'Primary Salary Deposit', amount: 4800.00, type: 'income', category: 'Salary', method: 'Bank Transfer', notes: 'Main employer' },
+      { id: '13', date: '2026-10-10', desc: 'Freelance UI Design Project', amount: 750.00, type: 'income', category: 'Freelance', method: 'Bank Transfer', notes: 'Side project client' }
+    ];
+
+    const DEFAULT_USERS = [
+      {
+        id: 'usr_john',
+        name: 'John Alvin Baylon',
+        username: 'john',
+        password: 'password123',
+        currency: '₱'
+      }
+    ];
+
+    const DEFAULT_SALARY_MONTHS = {
+      '2026-08': { monthKey: '2026-08', monthLabel: 'August 2026', income15th: 0, income30th: 0, totalBudget: 0, actualExpenses: 0, autoExpenses: false },
+      '2026-09': { monthKey: '2026-09', monthLabel: 'September 2026', income15th: 0, income30th: 0, totalBudget: 0, actualExpenses: 0, autoExpenses: false },
+      '2026-10': { monthKey: '2026-10', monthLabel: 'October 2026', income15th: 32862.58, income30th: 30544.21, totalBudget: 36000.00, actualExpenses: 39375.19, autoExpenses: false },
+      '2026-11': { monthKey: '2026-11', monthLabel: 'November 2026', income15th: 31062.58, income30th: 30544.21, totalBudget: 57100.00, actualExpenses: 15631.00, autoExpenses: false },
+      '2026-12': { monthKey: '2026-12', monthLabel: 'December 2026', income15th: 31062.58, income30th: 30544.21, totalBudget: 36000.00, actualExpenses: 15631.00, autoExpenses: false },
+      '2027-01': { monthKey: '2027-01', monthLabel: 'January 2027', income15th: 31062.58, income30th: 30544.21, totalBudget: 36000.00, actualExpenses: 15631.00, autoExpenses: false },
+      '2027-02': { monthKey: '2027-02', monthLabel: 'February 2027', income15th: 31062.58, income30th: 30544.21, totalBudget: 36000.00, actualExpenses: 15631.00, autoExpenses: false },
+      '2027-03': { monthKey: '2027-03', monthLabel: 'March 2027', income15th: 31062.58, income30th: 30544.21, totalBudget: 36000.00, actualExpenses: 15631.00, autoExpenses: false },
+      '2027-04': { monthKey: '2027-04', monthLabel: 'April 2027', income15th: 31062.58, income30th: 30544.21, totalBudget: 36000.00, actualExpenses: 15631.00, autoExpenses: false },
+      '2027-05': { monthKey: '2027-05', monthLabel: 'May 2027', income15th: 31062.58, income30th: 30544.21, totalBudget: 36000.00, actualExpenses: 15631.00, autoExpenses: false }
+    };
+
+    const PRESET_COLORS = {
+      'Entertainment': '#ec4899',
+      'Food & Dining': '#f59e0b',
+      'Groceries': '#10b981',
+      'Health': '#14b8a6',
+      'Housing': '#6366f1',
+      'Other': '#94a3b8',
+      'Shopping': '#8b5cf6',
+      'Transportation': '#3b82f6',
+      'Utilities': '#06b6d4',
+      'Freelance': '#84cc16',
+      'Investments': '#10b981',
+      'Other Income': '#14b8a6',
+      'Salary': '#22c55e'
+    };
+
+    function getCategoryColor(cat) {
+      if (PRESET_COLORS[cat]) return PRESET_COLORS[cat];
+      let hash = 0;
+      for (let i = 0; i < cat.length; i++) {
+        hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const hue = Math.abs(hash % 360);
+      return `hsl(${hue}, 68%, 52%)`;
+    }
+
+    // Auth & App Global State
+    let auth = {
+      users: JSON.parse(localStorage.getItem('ag_auth_users')) || DEFAULT_USERS,
+      activeUserId: localStorage.getItem('ag_auth_active_user') || null
+    };
+
+    let state = {
+      currentUser: null,
+      currency: '₱',
+      selectedMonth: '2026-10',
+      transactions: [],
+      budgets: {},
+      expenseCategories: [],
+      incomeCategories: [],
+      salaryMonths: JSON.parse(JSON.stringify(DEFAULT_SALARY_MONTHS)),
+      salaryCollapsed: false,
+      searchQuery: '',
+      filterCat: 'all',
+      filterType: 'all',
+      sheetsApiUrl: localStorage.getItem('ag_sheets_api_url') || 'https://script.google.com/macros/s/AKfycbzMxfz2q1LPgsikhv6MJGtevGL8XGPxZSVHAaIZvrBDujJJkdPwoNTOwMBtZ46suoUQ/exec',
+      sheetName: localStorage.getItem('ag_sheets_doc_name') || 'Budget expenses',
+      sheetUrl: localStorage.getItem('ag_sheets_doc_url') || 'https://docs.google.com/spreadsheets/d/12KAsw7bwmjo7dDGT6wymSGyqJhVtRjiE6uIyFURCow8/edit',
+      autoSync: localStorage.getItem('ag_sheets_autosync') !== 'false',
+      viewMode: 'dashboard'
+    };
+
+    function sortAlphabetically(arr) {
+      return [...arr].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    }
+
+    function savePersonalData() {
+      if (!state.currentUser) return;
+      const key = `ag_user_data_${state.currentUser.id}`;
+      state.expenseCategories = sortAlphabetically(state.expenseCategories);
+      state.incomeCategories = sortAlphabetically(state.incomeCategories);
+
+      const payload = {
+        currency: state.currency,
+        selectedMonth: state.selectedMonth,
+        transactions: state.transactions,
+        budgets: state.budgets,
+        expenseCategories: state.expenseCategories,
+        incomeCategories: state.incomeCategories,
+        salaryMonths: state.salaryMonths,
+        salaryCollapsed: state.salaryCollapsed
+      };
+      localStorage.setItem(key, JSON.stringify(payload));
+    }
+
+    function loadPersonalData(user) {
+      state.currentUser = user;
+      const key = `ag_user_data_${user.id}`;
+      let data = JSON.parse(localStorage.getItem(key));
+
+      if (!data) {
+        if (user.id === 'usr_john') {
+          data = {
+            currency: user.currency || '₱',
+            selectedMonth: '2026-10',
+            transactions: DEFAULT_TRANSACTIONS,
+            budgets: DEFAULT_BUDGETS,
+            expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
+            incomeCategories: DEFAULT_INCOME_CATEGORIES,
+            salaryMonths: JSON.parse(JSON.stringify(DEFAULT_SALARY_MONTHS)),
+            salaryCollapsed: false
+          };
+        } else {
+          data = {
+            currency: user.currency || '₱',
+            selectedMonth: '2026-10',
+            transactions: [],
+            budgets: {
+              'Entertainment': 100,
+              'Food & Dining': 250,
+              'Groceries': 300,
+              'Housing': 800,
+              'Utilities': 150,
+              'Other': 100
+            },
+            expenseCategories: ['Entertainment', 'Food & Dining', 'Groceries', 'Housing', 'Other', 'Utilities'],
+            incomeCategories: ['Salary', 'Freelance', 'Other Income'],
+            salaryMonths: JSON.parse(JSON.stringify(DEFAULT_SALARY_MONTHS)),
+            salaryCollapsed: false
+          };
+        }
+      }
+
+      state.currency = data.currency || (user.id === 'usr_john' ? '₱' : '$');
+      state.selectedMonth = data.selectedMonth || '2026-10';
+      state.transactions = data.transactions || [];
+      state.budgets = data.budgets || {};
+      state.expenseCategories = sortAlphabetically(data.expenseCategories || DEFAULT_EXPENSE_CATEGORIES);
+      state.incomeCategories = sortAlphabetically(data.incomeCategories || DEFAULT_INCOME_CATEGORIES);
+      state.salaryMonths = data.salaryMonths || JSON.parse(JSON.stringify(DEFAULT_SALARY_MONTHS));
+      state.salaryCollapsed = !!data.salaryCollapsed;
+
+      savePersonalData();
+    }
+
+    function formatMoney(amount) {
+      return `${state.currency}${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    // Google Sheets API Integration
+    async function testSheetsConnection(url) {
+      const endpoint = (url || state.sheetsApiUrl || '').trim();
+      if (!endpoint) return { success: false, message: 'Please provide a valid Web App URL.' };
+
+      try {
+        const pingUrl = endpoint + (endpoint.includes('?') ? '&' : '?') + 'action=ping&t=' + Date.now();
+        const res = await fetch(pingUrl, { redirect: 'follow' });
+        const data = await res.json();
+        if (data && data.status === 'success') {
+          state.sheetsApiUrl = endpoint;
+          state.sheetName = data.sheetName || 'Google Sheet DB';
+          state.sheetUrl = data.sheetUrl || '';
+          localStorage.setItem('ag_sheets_api_url', endpoint);
+          localStorage.setItem('ag_sheets_doc_name', state.sheetName);
+          localStorage.setItem('ag_sheets_doc_url', state.sheetUrl);
+          updateSheetsUI(true);
+          return { success: true, message: 'Connected successfully!', data: data };
+        } else {
+          return { success: false, message: data.message || 'Unable to connect to Google Sheet.' };
+        }
+      } catch (err) {
+        return { success: false, message: 'Connection failed: ' + err.message };
+      }
+    }
+
+    async function pullFromGoogleSheet() {
+      if (!state.sheetsApiUrl) {
+        alert('Please connect your Google Sheet Web App URL first.');
+        return;
+      }
+      try {
+        const url = `${state.sheetsApiUrl}${state.sheetsApiUrl.includes('?') ? '&' : '?'}action=read&userId=${encodeURIComponent(state.currentUser ? state.currentUser.id : '')}&t=${Date.now()}`;
+        const res = await fetch(url, { redirect: 'follow' });
+        const data = await res.json();
+
+        if (data && data.status === 'success') {
+          if (Array.isArray(data.transactions) && data.transactions.length > 0) {
+            state.transactions = data.transactions;
+          }
+          if (Array.isArray(data.expenseCategories) && data.expenseCategories.length > 0) {
+            state.expenseCategories = sortAlphabetically(data.expenseCategories);
+          }
+          if (data.budgets && Object.keys(data.budgets).length > 0) {
+            state.budgets = { ...state.budgets, ...data.budgets };
+          }
+          if (data.salaryMonths && Object.keys(data.salaryMonths).length > 0) {
+            Object.values(data.salaryMonths).forEach(item => {
+              let key = item.monthKey;
+              if (key && !/^\d{4}-\d{2}$/.test(key)) {
+                const parsed = new Date(key);
+                if (!isNaN(parsed.getTime())) {
+                  const y = parsed.getFullYear();
+                  const m = String(parsed.getMonth() + 1).padStart(2, '0');
+                  key = `${y}-${m}`;
+                }
+              }
+              if (key && state.salaryMonths[key]) {
+                state.salaryMonths[key].income15th = Number(item.income15th || 0);
+                state.salaryMonths[key].income30th = Number(item.income30th || 0);
+                state.salaryMonths[key].totalBudget = Number(item.totalBudget || 0);
+                if (item.actualExpenses !== undefined) {
+                  state.salaryMonths[key].actualExpenses = Number(item.actualExpenses || 0);
+                }
+              } else if (key) {
+                state.salaryMonths[key] = {
+                  monthKey: key,
+                  monthLabel: item.monthLabel || key,
+                  income15th: Number(item.income15th || 0),
+                  income30th: Number(item.income30th || 0),
+                  totalBudget: Number(item.totalBudget || 0),
+                  actualExpenses: Number(item.actualExpenses || 0),
+                  autoExpenses: false
+                };
+              }
+            });
+          }
+          if (data.sheetName) state.sheetName = data.sheetName;
+          if (data.sheetUrl) state.sheetUrl = data.sheetUrl;
+
+          savePersonalData();
+          refreshAll();
+          updateSheetsUI(true);
+          alert(`Successfully pulled ${data.transactions ? data.transactions.length : 0} records and salary cutoffs from Google Sheets!`);
+        } else {
+          alert('Failed to pull data from Sheet: ' + (data ? data.message : 'Unknown response'));
+        }
+      } catch (err) {
+        alert('Network error while pulling from Google Sheet: ' + err.message);
+      }
+    }
+
+    async function pushAllToGoogleSheet() {
+      if (!state.sheetsApiUrl) {
+        alert('Please connect your Google Sheet Web App URL first.');
+        return;
+      }
+      try {
+        const payload = {
+          action: 'sync_all',
+          userId: state.currentUser ? state.currentUser.id : 'default',
+          transactions: state.transactions,
+          expenseCategories: state.expenseCategories,
+          budgets: state.budgets,
+          salaryMonths: state.salaryMonths
+        };
+
+        const res = await fetch(state.sheetsApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data && data.status === 'success') {
+          updateSheetsUI(true);
+          alert(`Success! Pushed ${state.transactions.length} transactions, ${state.expenseCategories.length} categories, and 10-month salary schedule directly into your Google Sheet table!`);
+        } else {
+          alert('Error pushing to Sheet: ' + (data ? data.message : 'Unknown response'));
+        }
+      } catch (err) {
+        alert('Error connecting to Google Sheets API: ' + err.message);
+      }
+    }
+
+    async function syncSalaryToSheet() {
+      if (!state.sheetsApiUrl || !state.autoSync) return;
+      try {
+        const payload = {
+          action: 'save_salary',
+          userId: state.currentUser ? state.currentUser.id : 'default',
+          salaryData: state.salaryMonths
+        };
+        fetch(state.sheetsApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        }).catch(e => console.warn('Background salary sync note:', e));
+      } catch (err) {}
+    }
+
+    async function syncSingleTransactionToSheet(tx) {
+      if (!state.sheetsApiUrl || !state.autoSync) return;
+      try {
+        const payload = {
+          action: 'save_transaction',
+          userId: state.currentUser ? state.currentUser.id : 'default',
+          transaction: tx
+        };
+        fetch(state.sheetsApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        }).catch(e => console.warn('Background Sheet sync note:', e));
+      } catch (err) {}
+    }
+
+    async function syncDeleteToSheet(txId) {
+      if (!state.sheetsApiUrl || !state.autoSync) return;
+      try {
+        const payload = {
+          action: 'delete_transaction',
+          userId: state.currentUser ? state.currentUser.id : 'default',
+          transactionId: txId
+        };
+        fetch(state.sheetsApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        }).catch(e => console.warn('Background Sheet delete note:', e));
+      } catch (err) {}
+    }
+
+    function updateSheetsUI(isConnected) {
+      const dot = document.getElementById('sheetStatusDot');
+      const modalDot = document.getElementById('modalStatusDot');
+      const modalTitle = document.getElementById('modalStatusTitle');
+      const modalDesc = document.getElementById('modalStatusDesc');
+      const extLink = document.getElementById('modalExternalSheetLink');
+      const banner = document.getElementById('sheetsSyncBanner');
+      const bannerName = document.getElementById('bannerSheetName');
+      const bannerLink = document.getElementById('bannerSheetLink');
+      const footerLabel = document.getElementById('dbModeFooterLabel');
+
+      if (isConnected && state.sheetsApiUrl) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+        modalDot.className = 'w-3 h-3 rounded-full bg-emerald-500';
+        modalTitle.textContent = `Connected: ${state.sheetName || 'Google Sheets'}`;
+        modalDesc.textContent = `Live database synced with active Google Spreadsheet table.`;
+        
+        if (state.sheetUrl) {
+          extLink.href = state.sheetUrl;
+          extLink.classList.remove('hidden');
+          bannerLink.href = state.sheetUrl;
+        }
+
+        banner.classList.remove('hidden');
+        banner.classList.add('flex');
+        bannerName.textContent = state.sheetName || 'Google Sheet DB';
+        footerLabel.textContent = `Database: Live Google Sheets Table (${state.sheetName || 'Active'})`;
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-slate-400';
+        modalDot.className = 'w-3 h-3 rounded-full bg-slate-400';
+        modalTitle.textContent = 'Local Offline Storage Mode';
+        modalDesc.textContent = 'Data is stored locally in your browser. Connect Google Sheets for cloud database.';
+        extLink.classList.add('hidden');
+        banner.classList.add('hidden');
+        banner.classList.remove('flex');
+        footerLabel.textContent = 'Database Mode: Local Offline Storage';
+      }
+    }
+
+    function showAuthAlert(message, isError = true) {
+      const alertEl = document.getElementById('authAlert');
+      alertEl.textContent = message;
+      alertEl.className = isError 
+        ? 'text-xs p-3 rounded-lg border bg-rose-500/10 border-rose-500/30 text-rose-500 font-medium'
+        : 'text-xs p-3 rounded-lg border bg-emerald-500/10 border-emerald-500/30 text-emerald-500 font-medium';
+      alertEl.classList.remove('hidden');
+    }
+
+    function hideAuthAlert() {
+      document.getElementById('authAlert').classList.add('hidden');
+    }
+
+    function setAuthTab(tab) {
+      hideAuthAlert();
+      const signInForm = document.getElementById('signInForm');
+      const registerForm = document.getElementById('registerForm');
+      const tabSignIn = document.getElementById('tabSignInBtn');
+      const tabRegister = document.getElementById('tabRegisterBtn');
+
+      if (tab === 'signin') {
+        signInForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        tabSignIn.className = 'py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow-sm transition';
+        tabRegister.className = 'py-2 text-xs font-semibold rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition';
+      } else {
+        signInForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        tabRegister.className = 'py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white shadow-sm transition';
+        tabSignIn.className = 'py-2 text-xs font-semibold rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition';
+      }
+    }
+
+    window.togglePasswordVisibility = function(fieldId) {
+      const input = document.getElementById(fieldId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    };
+
+    function loginUser(user) {
+      auth.activeUserId = user.id;
+      localStorage.setItem('ag_auth_active_user', user.id);
+      loadPersonalData(user);
+
+      document.getElementById('userNameLabel').textContent = user.name;
+      document.getElementById('userHandleLabel').textContent = `@${user.username}`;
+      const initials = user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('dashboardBadge').textContent = `${user.name.split(' ')[0]}'s Hub`;
+
+      document.getElementById('currencySelector').value = state.currency;
+
+      document.getElementById('authContainer').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+
+      if (state.sheetsApiUrl) {
+        testSheetsConnection(state.sheetsApiUrl);
+      } else {
+        updateSheetsUI(false);
+      }
+
+      refreshAll();
+    }
+
+    function logoutUser() {
+      auth.activeUserId = null;
+      state.currentUser = null;
+      localStorage.removeItem('ag_auth_active_user');
+
+      document.getElementById('appContainer').classList.add('hidden');
+      document.getElementById('authContainer').classList.remove('hidden');
+      document.getElementById('loginPassword').value = '';
+      hideAuthAlert();
+      setAuthTab('signin');
+    }
+
+    function updateCategoryDropdowns(selectedCategory = null) {
+      const filterSelect = document.getElementById('filterCategory');
+      const currentFilterVal = filterSelect.value;
+      filterSelect.innerHTML = `<option value="all">All Categories (A–Z)</option>`;
+
+      const allCategories = sortAlphabetically(Array.from(new Set([...state.expenseCategories, ...state.incomeCategories])));
+      allCategories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        if (cat === currentFilterVal) opt.selected = true;
+        filterSelect.appendChild(opt);
+      });
+
+      const txSelect = document.getElementById('txCategory');
+      const activeType = document.getElementById('txType').value;
+      const targetList = activeType === 'expense' ? sortAlphabetically(state.expenseCategories) : sortAlphabetically(state.incomeCategories);
+      
+      txSelect.innerHTML = '';
+      targetList.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        if (selectedCategory && cat === selectedCategory) opt.selected = true;
+        txSelect.appendChild(opt);
+      });
+
+      document.querySelectorAll('.modalCurrencyPrefix').forEach(el => el.textContent = state.currency);
+      document.querySelectorAll('.salaryCurrencyLabel').forEach(el => el.textContent = state.currency);
+    }
+
+    function addNewExpenseCategory(name, budgetAmount = 0) {
+      const cleanName = name.trim();
+      if (!cleanName) return false;
+
+      const exists = state.expenseCategories.some(c => c.toLowerCase() === cleanName.toLowerCase());
+      if (exists) {
+        alert(`The category "${cleanName}" already exists.`);
+        return false;
+      }
+
+      state.expenseCategories.push(cleanName);
+      state.expenseCategories = sortAlphabetically(state.expenseCategories);
+
+      if (budgetAmount !== undefined && budgetAmount !== null && budgetAmount !== '') {
+        state.budgets[cleanName] = Math.max(0, parseFloat(budgetAmount) || 0);
+      } else if (state.budgets[cleanName] === undefined) {
+        state.budgets[cleanName] = 0;
+      }
+
+      savePersonalData();
+      refreshAll();
+      renderCategoryModalList();
+
+      if (state.sheetsApiUrl && state.autoSync) {
+        pushAllToGoogleSheet();
+      }
+
+      return true;
+    }
+
+    function renderCategoryModalList() {
+      const container = document.getElementById('categoryListContainer');
+      const sorted = sortAlphabetically(state.expenseCategories);
+      document.getElementById('catListCount').textContent = `${sorted.length} Categories`;
+
+      container.innerHTML = sorted.map(cat => {
+        const color = getCategoryColor(cat);
+        const budget = state.budgets[cat] || 0;
+        const usageCount = state.transactions.filter(t => t.category === cat).length;
+
+        return `
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)]/80 transition">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background-color: ${color}"></span>
+              <div>
+                <span class="text-xs font-semibold text-[var(--foreground)]">${escapeHtml(cat)}</span>
+                <span class="text-[11px] text-[var(--muted-foreground)] ml-2">(${usageCount} record${usageCount === 1 ? '' : 's'})</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-[var(--muted-foreground)]">Budget: <strong class="text-[var(--foreground)]">${formatMoney(budget)}</strong></span>
+              <button type="button" onclick="deleteExpenseCategory('${escapeHtml(cat)}')" title="Delete Category" class="p-1 rounded text-[var(--muted-foreground)] hover:text-rose-500 hover:bg-rose-500/10 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.deleteExpenseCategory = function(cat) {
+      if (state.expenseCategories.length <= 1) {
+        alert('You must have at least one expense category.');
+        return;
+      }
+      const usageCount = state.transactions.filter(t => t.category === cat).length;
+      let promptMsg = `Delete category "${cat}"?`;
+      if (usageCount > 0) {
+        promptMsg += `\nWarning: ${usageCount} transaction(s) currently use this category.`;
+      }
+      if (confirm(promptMsg)) {
+        state.expenseCategories = state.expenseCategories.filter(c => c !== cat);
+        delete state.budgets[cat];
+        savePersonalData();
+        refreshAll();
+        renderCategoryModalList();
+        if (state.sheetsApiUrl && state.autoSync) pushAllToGoogleSheet();
+      }
+    };
+
+    function getFilteredTransactions() {
+      return state.transactions.filter(tx => {
+        if (state.selectedMonth !== 'all') {
+          if (!tx.date.startsWith(state.selectedMonth)) return false;
+        }
+        if (state.filterType !== 'all' && tx.type !== state.filterType) return false;
+        if (state.filterCat !== 'all' && tx.category !== state.filterCat) return false;
+        if (state.searchQuery.trim() !== '') {
+          const q = state.searchQuery.toLowerCase();
+          const matchDesc = tx.desc.toLowerCase().includes(q);
+          const matchCat = tx.category.toLowerCase().includes(q);
+          const matchNotes = (tx.notes || '').toLowerCase().includes(q);
+          if (!matchDesc && !matchCat && !matchNotes) return false;
+        }
+        return true;
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function updateKPIs() {
+      const monthTxs = state.transactions.filter(tx => state.selectedMonth === 'all' || tx.date.startsWith(state.selectedMonth));
+      
+      const totalIncome = monthTxs
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const totalExpenses = monthTxs
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const totalBudget = state.expenseCategories.reduce((sum, cat) => sum + Number(state.budgets[cat] || 0), 0);
+      const remainingBudget = totalBudget - totalExpenses;
+      const budgetUsedPct = totalBudget > 0 ? (totalExpenses / totalBudget) * 100 : 0;
+      const netCashflow = totalIncome - totalExpenses;
+      const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
+
+      document.getElementById('kpiTotalBudget').textContent = formatMoney(totalBudget);
+      document.getElementById('kpiTotalExpenses').textContent = formatMoney(totalExpenses);
+      document.getElementById('kpiTotalIncome').textContent = formatMoney(totalIncome);
+      document.getElementById('kpiRemainingBudget').textContent = formatMoney(remainingBudget);
+      
+      const cashflowEl = document.getElementById('kpiNetCashflow');
+      cashflowEl.textContent = (netCashflow >= 0 ? '+' : '') + formatMoney(netCashflow);
+      if (netCashflow >= 0) {
+        cashflowEl.className = 'text-2xl font-bold text-emerald-500 tracking-tight';
+      } else {
+        cashflowEl.className = 'text-2xl font-bold text-rose-500 tracking-tight';
+      }
+
+      const usedBadge = document.getElementById('kpiBudgetUsedBadge');
+      usedBadge.textContent = `${budgetUsedPct.toFixed(1)}%`;
+      if (budgetUsedPct > 100) {
+        usedBadge.className = 'px-1.5 py-0.5 rounded text-[11px] font-semibold bg-rose-500/15 text-rose-500';
+      } else if (budgetUsedPct > 80) {
+        usedBadge.className = 'px-1.5 py-0.5 rounded text-[11px] font-semibold bg-amber-500/15 text-amber-500';
+      } else {
+        usedBadge.className = 'px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-500';
+      }
+
+      const statusEl = document.getElementById('kpiBudgetStatusText');
+      if (remainingBudget >= 0) {
+        statusEl.innerHTML = `<span class="text-emerald-500 font-medium">● Safe</span>: ${formatMoney(remainingBudget)} left to spend`;
+      } else {
+        statusEl.innerHTML = `<span class="text-rose-500 font-medium">● Alert</span>: Exceeded by ${formatMoney(Math.abs(remainingBudget))}`;
+      }
+
+      const savingsBadge = document.getElementById('kpiSavingsRateBadge');
+      savingsBadge.textContent = `${savingsRate.toFixed(1)}% Saved`;
+
+      const paceLabel = document.getElementById('overallPaceLabel');
+      paceLabel.textContent = `${budgetUsedPct.toFixed(1)}% spent (${formatMoney(totalExpenses)} of ${formatMoney(totalBudget)})`;
+      
+      const progressBar = document.getElementById('overallProgressBar');
+      const cappedWidth = Math.min(100, Math.max(0, budgetUsedPct));
+      progressBar.style.width = `${cappedWidth}%`;
+      if (budgetUsedPct > 100) {
+        progressBar.className = 'bg-rose-500 h-full rounded-full transition-all duration-500';
+      } else if (budgetUsedPct > 80) {
+        progressBar.className = 'bg-amber-500 h-full rounded-full transition-all duration-500';
+      } else {
+        progressBar.className = 'bg-emerald-500 h-full rounded-full transition-all duration-500';
+      }
+    }
+
+    function renderCategoryBudgets() {
+      const container = document.getElementById('categoryBudgetList');
+      container.innerHTML = '';
+
+      const monthTxs = state.transactions.filter(tx => 
+        (state.selectedMonth === 'all' || tx.date.startsWith(state.selectedMonth)) && tx.type === 'expense'
+      );
+
+      const expenseByCategory = {};
+      monthTxs.forEach(tx => {
+        expenseByCategory[tx.category] = (expenseByCategory[tx.category] || 0) + Number(tx.amount);
+      });
+
+      const categories = sortAlphabetically(state.expenseCategories);
+
+      categories.forEach(cat => {
+        const spent = expenseByCategory[cat] || 0;
+        const budget = state.budgets[cat] || 0;
+        const pct = budget > 0 ? (spent / budget) * 100 : (spent > 0 ? 100 : 0);
+        const color = getCategoryColor(cat);
+
+        let barColor = color;
+        let badgeClass = 'text-[var(--muted-foreground)]';
+        let statusBadge = `${pct.toFixed(0)}%`;
+
+        if (pct >= 100) {
+          barColor = '#ef4444';
+          badgeClass = 'text-rose-500 font-bold';
+          statusBadge = `Over budget (${pct.toFixed(0)}%)`;
+        } else if (pct >= 80) {
+          barColor = '#f59e0b';
+          badgeClass = 'text-amber-500 font-semibold';
+        }
+
+        const div = document.createElement('div');
+        div.className = 'space-y-1.5';
+        div.innerHTML = `
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${color}"></span>
+              <span class="font-medium text-[var(--foreground)]">${escapeHtml(cat)}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[var(--muted-foreground)]">${formatMoney(spent)} / <span class="font-medium text-[var(--foreground)]">${formatMoney(budget)}</span></span>
+              <span class="${badgeClass} text-[11px]">${statusBadge}</span>
+            </div>
+          </div>
+          <div class="w-full bg-[var(--border)]/40 rounded-full h-2 overflow-hidden">
+            <div class="h-full rounded-full transition-all duration-300" style="width: ${Math.min(100, pct)}%; background-color: ${barColor}"></div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderTransactions() {
+      const tbody = document.getElementById('transactionsTableBody');
+      const rawBody = document.getElementById('sheetsRawTableBody');
+      const filtered = getFilteredTransactions();
+      const countLabel = document.getElementById('transactionCountLabel');
+      countLabel.textContent = `Showing ${filtered.length} transaction${filtered.length === 1 ? '' : 's'}`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-10 text-[var(--muted-foreground)]">
+              <div class="flex flex-col items-center justify-center gap-2">
+                <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <p class="text-sm">No transactions logged for this criteria yet</p>
+                <button onclick="document.getElementById('openAddModalBtn').click()" class="mt-1 text-xs text-emerald-500 font-medium hover:underline">+ Log your first record</button>
+              </div>
+            </td>
+          </tr>
+        `;
+        rawBody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-[var(--muted-foreground)]">No Sheet rows mapped</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(tx => {
+        const isExp = tx.type === 'expense';
+        const color = getCategoryColor(tx.category);
+        const amountDisplay = (isExp ? '-' : '+') + formatMoney(tx.amount);
+        const amountClass = isExp ? 'text-rose-500 font-semibold' : 'text-emerald-500 font-semibold';
+        
+        return `
+          <tr class="hover:bg-[var(--border)]/20 transition-colors group">
+            <td class="py-3 px-4 font-mono text-xs text-[var(--muted-foreground)] whitespace-nowrap">${tx.date}</td>
+            <td class="py-3 px-4">
+              <div class="font-medium text-[var(--foreground)]">${escapeHtml(tx.desc)}</div>
+              ${tx.notes ? `<div class="text-[11px] text-[var(--muted-foreground)] italic">${escapeHtml(tx.notes)}</div>` : ''}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium" style="background-color: ${color}15; color: ${color}; border: 1px solid ${color}30">
+                <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${color}"></span>
+                ${escapeHtml(tx.category)}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-[var(--muted-foreground)] whitespace-nowrap text-xs">${escapeHtml(tx.method || 'Card')}</td>
+            <td class="py-3 px-4 text-right whitespace-nowrap font-mono ${amountClass}">${amountDisplay}</td>
+            <td class="py-3 px-4 text-center whitespace-nowrap">
+              <div class="flex items-center justify-center gap-1">
+                <button onclick="editTransaction('${tx.id}')" title="Edit" class="p-1 rounded text-[var(--muted-foreground)] hover:text-emerald-500 hover:bg-[var(--border)]/30 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                  </svg>
+                </button>
+                <button onclick="deleteTransaction('${tx.id}')" title="Delete" class="p-1 rounded text-[var(--muted-foreground)] hover:text-rose-500 hover:bg-[var(--border)]/30 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      rawBody.innerHTML = filtered.map(tx => {
+        return `
+          <tr class="hover:bg-emerald-500/5 transition font-mono text-[11px]">
+            <td class="py-2 px-3 text-[var(--muted-foreground)] whitespace-nowrap">${tx.id}</td>
+            <td class="py-2 px-3 text-emerald-500 whitespace-nowrap">${state.currentUser ? state.currentUser.id : 'usr'}</td>
+            <td class="py-2 px-3 whitespace-nowrap">${tx.date}</td>
+            <td class="py-2 px-3 whitespace-nowrap uppercase">${tx.type}</td>
+            <td class="py-2 px-3 whitespace-nowrap font-medium text-[var(--foreground)]">${escapeHtml(tx.category)}</td>
+            <td class="py-2 px-3">${escapeHtml(tx.desc)}</td>
+            <td class="py-2 px-3 text-right font-bold">${formatMoney(tx.amount)}</td>
+            <td class="py-2 px-3 whitespace-nowrap text-[var(--muted-foreground)]">${escapeHtml(tx.method || 'Card')}</td>
+            <td class="py-2 px-3 text-[var(--muted-foreground)]">${escapeHtml(tx.notes || '-')}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDonutChart() {
+      const canvas = document.getElementById('categoryDonutChart');
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+
+      const monthTxs = state.transactions.filter(tx => 
+        (state.selectedMonth === 'all' || tx.date.startsWith(state.selectedMonth)) && tx.type === 'expense'
+      );
+
+      const categoryTotals = {};
+      let totalExpense = 0;
+      monthTxs.forEach(t => {
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + Number(t.amount);
+        totalExpense += Number(t.amount);
+      });
+
+      document.getElementById('chartTotalLabel').textContent = `Total: ${formatMoney(totalExpense)}`;
+
+      const sortedEntries = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+      const legend = document.getElementById('donutLegend');
+      legend.innerHTML = '';
+
+      if (sortedEntries.length === 0 || totalExpense === 0) {
+        ctx.beginPath();
+        ctx.arc(width / 2, height / 2, 85, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(150, 150, 150, 0.2)';
+        ctx.lineWidth = 26;
+        ctx.stroke();
+
+        document.getElementById('donutCenterCategory').textContent = 'No Expenses';
+        document.getElementById('donutCenterAmount').textContent = formatMoney(0);
+        document.getElementById('donutCenterPct').textContent = '0%';
+        legend.innerHTML = '<span class="text-[var(--muted-foreground)] col-span-2 text-center py-2">No expenses logged for this month</span>';
+        return;
+      }
+
+      const topCat = sortedEntries[0];
+      const topPct = ((topCat[1] / totalExpense) * 100).toFixed(0);
+      document.getElementById('donutCenterCategory').textContent = topCat[0];
+      document.getElementById('donutCenterAmount').textContent = formatMoney(topCat[1]);
+      document.getElementById('donutCenterPct').textContent = `${topPct}% of total`;
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const radius = 85;
+      const lineWidth = 28;
+
+      let currentAngle = -Math.PI / 2;
+
+      sortedEntries.forEach(([cat, amount]) => {
+        const sliceAngle = (amount / totalExpense) * (Math.PI * 2);
+        const color = getCategoryColor(cat);
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = 'butt';
+        ctx.stroke();
+
+        currentAngle += sliceAngle;
+      });
+
+      const alphabeticalEntries = Object.entries(categoryTotals).sort((a, b) => a[0].localeCompare(b[0]));
+      alphabeticalEntries.forEach(([cat, amount]) => {
+        const color = getCategoryColor(cat);
+        const pct = ((amount / totalExpense) * 100).toFixed(1);
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between py-1 px-1.5 rounded hover:bg-[var(--border)]/20 cursor-default transition';
+        item.innerHTML = `
+          <div class="flex items-center gap-1.5 truncate">
+            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${color}"></span>
+            <span class="truncate text-[var(--foreground)]">${escapeHtml(cat)}</span>
+          </div>
+          <span class="font-medium text-[var(--muted-foreground)] ml-1">${pct}%</span>
+        `;
+        legend.appendChild(item);
+      });
+    }
+
+    function renderDailyTrendChart() {
+      const canvas = document.getElementById('dailyTrendChart');
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = (rect.width || 600) * dpr;
+      canvas.height = 220 * dpr;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      const width = rect.width || 600;
+      const height = 220;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const daysInPeriod = 31;
+      const dailyExpenses = new Array(daysInPeriod).fill(0);
+
+      state.transactions.forEach(tx => {
+        if (tx.type !== 'expense') return;
+        if (state.selectedMonth !== 'all' && !tx.date.startsWith(state.selectedMonth)) return;
+
+        const day = parseInt(tx.date.split('-')[2], 10);
+        if (day >= 1 && day <= daysInPeriod) {
+          dailyExpenses[day - 1] += Number(tx.amount);
+        }
+      });
+
+      const maxExp = Math.max(...dailyExpenses, 100);
+      const paddingLeft = 45;
+      const paddingBottom = 28;
+      const paddingTop = 20;
+      const chartWidth = width - paddingLeft - 20;
+      const chartHeight = height - paddingBottom - paddingTop;
+
+      const isLight = document.documentElement.classList.contains('light') || 
+                      (!document.documentElement.classList.contains('dark') && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+      
+      ctx.strokeStyle = isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.08)';
+      ctx.fillStyle = isLight ? '#64748b' : '#94a3b8';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'right';
+
+      const gridSteps = 4;
+      for (let i = 0; i <= gridSteps; i++) {
+        const yVal = (maxExp / gridSteps) * i;
+        const yPos = height - paddingBottom - (yVal / maxExp) * chartHeight;
+
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, yPos);
+        ctx.lineTo(width - 20, yPos);
+        ctx.stroke();
+
+        ctx.fillText(`${state.currency}${Math.round(yVal)}`, paddingLeft - 8, yPos + 3);
+      }
+
+      const slotWidth = chartWidth / daysInPeriod;
+      const barWidth = Math.max(3, slotWidth * 0.65);
+
+      for (let day = 0; day < daysInPeriod; day++) {
+        const val = dailyExpenses[day];
+        const barHeight = (val / maxExp) * chartHeight;
+        const xPos = paddingLeft + day * slotWidth + (slotWidth - barWidth) / 2;
+        const yPos = height - paddingBottom - barHeight;
+
+        if (val > 0) {
+          const grad = ctx.createLinearGradient(0, yPos, 0, height - paddingBottom);
+          grad.addColorStop(0, '#10b981');
+          grad.addColorStop(1, 'rgba(16, 185, 129, 0.3)');
+          ctx.fillStyle = grad;
+          
+          ctx.beginPath();
+          const r = Math.min(3, barHeight);
+          ctx.roundRect ? ctx.roundRect(xPos, yPos, barWidth, barHeight, [r, r, 0, 0]) : ctx.rect(xPos, yPos, barWidth, barHeight);
+          ctx.fill();
+        }
+
+        if ((day + 1) % 5 === 0 || day === 0) {
+          ctx.fillStyle = isLight ? '#64748b' : '#94a3b8';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Oct ${day + 1}`, xPos + barWidth / 2, height - 8);
+        }
+      }
+    }
+
+    const txModal = document.getElementById('transactionModal');
+    const budgetModal = document.getElementById('budgetModal');
+    const categoryModal = document.getElementById('categoryModal');
+    const sheetsModal = document.getElementById('sheetsModal');
+
+    function openTransactionModal(editId = null) {
+      const form = document.getElementById('transactionForm');
+      form.reset();
+      document.getElementById('formCurrencyPrefix').textContent = state.currency;
+      document.getElementById('inlineQuickAddBox').classList.add('hidden');
+
+      if (editId) {
+        const tx = state.transactions.find(t => t.id === editId);
+        if (tx) {
+          document.getElementById('modalTitle').textContent = 'Edit Transaction';
+          document.getElementById('txId').value = tx.id;
+          document.getElementById('txDesc').value = tx.desc;
+          document.getElementById('txAmount').value = tx.amount;
+          document.getElementById('txDate').value = tx.date;
+          document.getElementById('txPaymentMethod').value = tx.method || 'Credit Card';
+          document.getElementById('txNotes').value = tx.notes || '';
+          setFormType(tx.type);
+          updateCategoryDropdowns(tx.category);
+        }
+      } else {
+        document.getElementById('modalTitle').textContent = 'Add Transaction';
+        document.getElementById('txId').value = '';
+        document.getElementById('txDate').value = '2026-10-14';
+        setFormType('expense');
+        updateCategoryDropdowns();
+      }
+
+      txModal.classList.remove('hidden');
+      txModal.classList.add('flex');
+    }
+
+    function closeTransactionModal() {
+      txModal.classList.add('hidden');
+      txModal.classList.remove('flex');
+    }
+
+    function setFormType(type) {
+      document.getElementById('txType').value = type;
+      const expBtn = document.getElementById('typeExpenseBtn');
+      const incBtn = document.getElementById('typeIncomeBtn');
+      if (type === 'expense') {
+        expBtn.className = 'py-1.5 text-xs font-semibold rounded-md bg-rose-500 text-white transition';
+        incBtn.className = 'py-1.5 text-xs font-semibold rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition';
+      } else {
+        incBtn.className = 'py-1.5 text-xs font-semibold rounded-md bg-emerald-600 text-white transition';
+        expBtn.className = 'py-1.5 text-xs font-semibold rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition';
+      }
+      updateCategoryDropdowns();
+    }
+
+    function openCategoryModal() {
+      document.getElementById('createCategoryForm').reset();
+      renderCategoryModalList();
+      categoryModal.classList.remove('hidden');
+      categoryModal.classList.add('flex');
+    }
+
+    function closeCategoryModal() {
+      categoryModal.classList.add('hidden');
+      categoryModal.classList.remove('flex');
+    }
+
+    function openBudgetModal() {
+      const container = document.getElementById('budgetInputsContainer');
+      container.innerHTML = '';
+      
+      let sum = 0;
+      const sortedCategories = sortAlphabetically(state.expenseCategories);
+
+      sortedCategories.forEach(cat => {
+        const val = state.budgets[cat] || 0;
+        sum += Number(val);
+        const color = getCategoryColor(cat);
+
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between gap-3 p-2 rounded-lg bg-[var(--background)] border border-[var(--border)]';
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+            <span class="text-xs font-medium text-[var(--foreground)]">${escapeHtml(cat)}</span>
+          </div>
+          <div class="relative w-36">
+            <span class="absolute left-2.5 top-1.5 text-xs text-[var(--muted-foreground)] font-bold">${state.currency}</span>
+            <input type="number" step="10" min="0" data-cat="${escapeHtml(cat)}" value="${val}" class="budget-input w-full bg-[var(--card)] border border-[var(--border)] rounded px-2 pl-6 py-1 text-xs text-right font-medium text-[var(--foreground)] focus:ring-1 focus:ring-emerald-500">
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById('budgetModalTotal').textContent = formatMoney(sum);
+
+      container.querySelectorAll('.budget-input').forEach(input => {
+        input.addEventListener('input', () => {
+          let currSum = 0;
+          container.querySelectorAll('.budget-input').forEach(inp => currSum += Number(inp.value || 0));
+          document.getElementById('budgetModalTotal').textContent = formatMoney(currSum);
+        });
+      });
+
+      budgetModal.classList.remove('hidden');
+      budgetModal.classList.add('flex');
+    }
+
+    function closeBudgetModal() {
+      budgetModal.classList.add('hidden');
+      budgetModal.classList.remove('flex');
+    }
+
+    function saveCategoryBudgets() {
+      const inputs = document.querySelectorAll('.budget-input');
+      inputs.forEach(inp => {
+        const cat = inp.dataset.cat;
+        state.budgets[cat] = Math.max(0, parseFloat(inp.value) || 0);
+      });
+      savePersonalData();
+      closeBudgetModal();
+      refreshAll();
+      if (state.sheetsApiUrl && state.autoSync) pushAllToGoogleSheet();
+    }
+
+    function openSheetsModal() {
+      document.getElementById('sheetsApiUrlInput').value = state.sheetsApiUrl || '';
+      document.getElementById('autoSyncCheck').checked = state.autoSync;
+      sheetsModal.classList.remove('hidden');
+      sheetsModal.classList.add('flex');
+    }
+
+    function closeSheetsModal() {
+      sheetsModal.classList.add('hidden');
+      sheetsModal.classList.remove('flex');
+    }
+
+    function exportToCSV() {
+      const filtered = getFilteredTransactions();
+      const headers = ['ID', 'Date', 'Type', 'Category', 'Description', 'Amount', 'Payment Method', 'Notes'];
+      const rows = filtered.map(t => [
+        t.id,
+        t.date,
+        t.type,
+        `"${t.category.replace(/"/g, '""')}"`,
+        `"${t.desc.replace(/"/g, '""')}"`,
+        t.amount,
+        `"${(t.method || '').replace(/"/g, '""')}"`,
+        `"${(t.notes || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `${state.currentUser ? state.currentUser.name : 'User'}_Budget_${state.selectedMonth}_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.deleteTransaction = function(id) {
+      if (confirm('Are you sure you want to delete this transaction record?')) {
+        state.transactions = state.transactions.filter(t => t.id !== id);
+        savePersonalData();
+        refreshAll();
+        syncDeleteToSheet(id);
+      }
+    };
+
+    window.editTransaction = function(id) {
+      openTransactionModal(id);
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const cardView = document.getElementById('standardTableView');
+      const sheetView = document.getElementById('sheetsTableView');
+      const cardBtn = document.getElementById('viewModeCardBtn');
+      const sheetBtn = document.getElementById('viewModeSheetBtn');
+
+      if (mode === 'sheet') {
+        cardView.classList.add('hidden');
+        sheetView.classList.remove('hidden');
+        sheetBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-600 text-white transition';
+        cardBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition';
+      } else {
+        cardView.classList.remove('hidden');
+        sheetView.classList.add('hidden');
+        cardBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-600 text-white transition';
+        sheetBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition';
+      }
+    }
+
+    function refreshAll() {
+      updateCategoryDropdowns();
+      updateKPIs();
+      renderSalaryAllocation();
+      renderCategoryBudgets();
+      renderTransactions();
+      renderDonutChart();
+      renderDailyTrendChart();
+    }
+
+    function renderSalaryAllocation() {
+      const container = document.getElementById('salaryBodyContainer');
+      const chevron = document.getElementById('salaryChevronIcon');
+      const collapseText = document.getElementById('salaryCollapseText');
+
+      if (!container) return;
+
+      if (state.salaryCollapsed) {
+        container.classList.add('hidden');
+        chevron.classList.add('-rotate-90');
+        collapseText.textContent = 'Show';
+      } else {
+        container.classList.remove('hidden');
+        chevron.classList.remove('-rotate-90');
+        collapseText.textContent = 'Hide';
+      }
+
+      const months = Object.keys(state.salaryMonths || {});
+      if (months.length === 0) return;
+
+      let sumIncome15th = 0;
+      let sumIncome30th = 0;
+      let sumTotalBudget = 0;
+      let sumActualExpenses = 0;
+
+      const tbody = document.getElementById('salaryTableBody');
+      tbody.innerHTML = '';
+
+      months.forEach(mKey => {
+        const item = state.salaryMonths[mKey] || {};
+        const inc15 = Number(item.income15th || 0);
+        const inc30 = Number(item.income30th || 0);
+        const totalInc = inc15 + inc30;
+        const totalBud = Number(item.totalBudget || 0);
+
+        let actualExp = Number(item.actualExpenses || 0);
+        if (item.autoExpenses) {
+          actualExp = state.transactions
+            .filter(t => t.type === 'expense' && t.date.startsWith(mKey))
+            .reduce((sum, t) => sum + Number(t.amount), 0);
+        }
+
+        const remaining = totalBud - actualExp;
+        let remPctStr = '—';
+        let remPctClass = 'text-[var(--muted-foreground)]';
+        if (totalBud > 0) {
+          const remPct = Math.round((remaining / totalBud) * 100);
+          remPctStr = `${remPct}%`;
+          remPctClass = remPct < 0 ? 'text-rose-500 font-semibold' : 'text-emerald-400 font-semibold';
+        }
+
+        const remClass = remaining < 0 ? 'text-rose-500 font-semibold' : (remaining > 0 ? 'text-emerald-400 font-semibold' : 'text-[var(--muted-foreground)]');
+        const projSavings = totalInc - totalBud;
+        const actualSavings = totalInc - actualExp;
+
+        sumIncome15th += inc15;
+        sumIncome30th += inc30;
+        sumTotalBudget += totalBud;
+        sumActualExpenses += actualExp;
+
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-[var(--border)]/30 transition-colors';
+        row.innerHTML = `
+          <td class="py-2.5 px-4 font-sans font-medium text-[var(--foreground)] whitespace-nowrap">${escapeHtml(item.monthLabel || mKey)}</td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap text-[var(--foreground)]">${formatMoney(inc15)}</td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap text-[var(--foreground)]">${formatMoney(inc30)}</td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap text-[var(--foreground)]">${formatMoney(totalBud)}</td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap text-[var(--foreground)]">${formatMoney(actualExp)}</td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap ${remClass}">${remaining < 0 ? '-' + formatMoney(Math.abs(remaining)) : formatMoney(remaining)}</td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap ${remPctClass}">${remPctStr}</td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap text-emerald-400 font-medium">${formatMoney(projSavings)}</td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap text-emerald-400 font-medium">${formatMoney(actualSavings)}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      const sumTotalIncome = sumIncome15th + sumIncome30th;
+      const sumRemaining = sumTotalBudget - sumActualExpenses;
+      const sumRemPct = sumTotalBudget > 0 ? Math.round((sumRemaining / sumTotalBudget) * 100) : 0;
+      const sumProjSavings = sumTotalIncome - sumTotalBudget;
+      const sumActualSavings = sumTotalIncome - sumActualExpenses;
+
+      // Table Total Row
+      const footerRow = document.getElementById('salaryTableFooter');
+      const sumRemClass = sumRemaining < 0 ? 'text-rose-500' : 'text-emerald-400';
+      footerRow.innerHTML = `
+        <td class="py-3 px-4 font-sans font-bold text-[var(--foreground)] whitespace-nowrap">Total</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap text-[var(--foreground)] font-bold">${formatMoney(sumIncome15th)}</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap text-[var(--foreground)] font-bold">${formatMoney(sumIncome30th)}</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap text-[var(--foreground)] font-bold">${formatMoney(sumTotalBudget)}</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap text-[var(--foreground)] font-bold">${formatMoney(sumActualExpenses)}</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap ${sumRemClass} font-bold">${sumRemaining < 0 ? '-' + formatMoney(Math.abs(sumRemaining)) : formatMoney(sumRemaining)}</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap ${sumRemClass} font-bold">${sumRemPct}%</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap text-emerald-400 font-bold">${formatMoney(sumProjSavings)}</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap text-emerald-400 font-bold">${formatMoney(sumActualSavings)}</td>
+      `;
+
+      // Top 6 KPI Cards
+      document.getElementById('salKpiIncome15th').textContent = formatMoney(sumIncome15th);
+      document.getElementById('salKpiIncome30th').textContent = formatMoney(sumIncome30th);
+      document.getElementById('salKpiTotalIncome').textContent = formatMoney(sumTotalIncome);
+
+      const remCard = document.getElementById('salKpiRemaining');
+      remCard.textContent = sumRemaining < 0 ? '-' + formatMoney(Math.abs(sumRemaining)) : formatMoney(sumRemaining);
+      remCard.className = `text-xl sm:text-2xl font-bold tracking-tight ${sumRemaining < 0 ? 'text-rose-500' : 'text-emerald-400'}`;
+      document.getElementById('salKpiRemainingSub').textContent = `${sumRemPct}% remaining of budget`;
+
+      const projPct = sumTotalIncome > 0 ? Math.round((sumProjSavings / sumTotalIncome) * 100) : 0;
+      document.getElementById('salKpiProjSavings').textContent = formatMoney(sumProjSavings);
+      document.getElementById('salKpiProjSavingsSub').textContent = `${projPct}% of income`;
+
+      const actPct = sumTotalIncome > 0 ? Math.round((sumActualSavings / sumTotalIncome) * 100) : 0;
+      document.getElementById('salKpiActualSavings').textContent = formatMoney(sumActualSavings);
+      document.getElementById('salKpiActualSavingsSub').textContent = `${actPct}% of income saved`;
+    }
+
+    function toggleSalaryCollapse() {
+      state.salaryCollapsed = !state.salaryCollapsed;
+      savePersonalData();
+      renderSalaryAllocation();
+    }
+
+    function openSalaryModal() {
+      const modal = document.getElementById('salaryModal');
+      const tbody = document.getElementById('salaryModalInputsBody');
+      tbody.innerHTML = '';
+
+      document.querySelectorAll('.salaryCurrencyLabel').forEach(el => el.textContent = state.currency);
+
+      const months = Object.keys(state.salaryMonths || {});
+      months.forEach(mKey => {
+        const item = state.salaryMonths[mKey] || {};
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-[var(--border)]/20 transition';
+        row.innerHTML = `
+          <td class="py-2.5 px-3 font-sans font-medium text-[var(--foreground)] whitespace-nowrap">
+            ${escapeHtml(item.monthLabel || mKey)}
+            <input type="hidden" class="sal-input-key" value="${mKey}">
+          </td>
+          <td class="py-2.5 px-3">
+            <input type="number" step="0.01" min="0" value="${item.income15th || 0}" class="sal-input-15th w-28 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1 text-right text-xs text-[var(--foreground)] focus:ring-1 focus:ring-emerald-500 font-mono">
+          </td>
+          <td class="py-2.5 px-3">
+            <input type="number" step="0.01" min="0" value="${item.income30th || 0}" class="sal-input-30th w-28 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1 text-right text-xs text-[var(--foreground)] focus:ring-1 focus:ring-emerald-500 font-mono">
+          </td>
+          <td class="py-2.5 px-3">
+            <input type="number" step="0.01" min="0" value="${item.totalBudget || 0}" class="sal-input-budget w-28 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1 text-right text-xs text-[var(--foreground)] focus:ring-1 focus:ring-emerald-500 font-mono">
+          </td>
+          <td class="py-2.5 px-3">
+            <input type="number" step="0.01" min="0" value="${item.actualExpenses || 0}" ${item.autoExpenses ? 'disabled' : ''} class="sal-input-actual w-28 bg-[var(--background)] border border-[var(--border)] rounded px-2 py-1 text-right text-xs text-[var(--foreground)] focus:ring-1 focus:ring-emerald-500 font-mono ${item.autoExpenses ? 'opacity-50 cursor-not-allowed' : ''}">
+          </td>
+          <td class="py-2.5 px-3 text-center">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-[11px] text-[var(--muted-foreground)]">
+              <input type="checkbox" class="sal-toggle-auto rounded border-[var(--border)] text-emerald-600 focus:ring-emerald-500" ${item.autoExpenses ? 'checked' : ''} onchange="toggleRowAutoExpenses(this)">
+              <span>Auto Sync</span>
+            </label>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    window.toggleRowAutoExpenses = function(checkbox) {
+      const row = checkbox.closest('tr');
+      const actualInput = row.querySelector('.sal-input-actual');
+      if (checkbox.checked) {
+        actualInput.disabled = true;
+        actualInput.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        actualInput.disabled = false;
+        actualInput.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    };
+
+    function closeSalaryModal() {
+      const modal = document.getElementById('salaryModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveSalarySettings() {
+      const rows = document.querySelectorAll('#salaryModalInputsBody tr');
+      rows.forEach(r => {
+        const mKey = r.querySelector('.sal-input-key').value;
+        const inc15 = parseFloat(r.querySelector('.sal-input-15th').value) || 0;
+        const inc30 = parseFloat(r.querySelector('.sal-input-30th').value) || 0;
+        const budget = parseFloat(r.querySelector('.sal-input-budget').value) || 0;
+        const auto = r.querySelector('.sal-toggle-auto').checked;
+        const actual = parseFloat(r.querySelector('.sal-input-actual').value) || 0;
+
+        if (state.salaryMonths[mKey]) {
+          state.salaryMonths[mKey].income15th = inc15;
+          state.salaryMonths[mKey].income30th = inc30;
+          state.salaryMonths[mKey].totalBudget = budget;
+          state.salaryMonths[mKey].autoExpenses = auto;
+          state.salaryMonths[mKey].actualExpenses = actual;
+        }
+      });
+
+      savePersonalData();
+      closeSalaryModal();
+      renderSalaryAllocation();
+
+      if (state.sheetsApiUrl && state.autoSync) {
+        syncSalaryToSheet();
+      }
+    }
+
+    function resetSalaryDefaults() {
+      if (confirm('Reset salary allocation to screenshot sample data (August 2026 – May 2027)?')) {
+        state.salaryMonths = JSON.parse(JSON.stringify(DEFAULT_SALARY_MONTHS));
+        savePersonalData();
+        openSalaryModal();
+        renderSalaryAllocation();
+        if (state.sheetsApiUrl && state.autoSync) {
+          syncSalaryToSheet();
+        }
+      }
+    }
+
+    function applyQuickSalary() {
+      const q15 = parseFloat(document.getElementById('quickSalary15th').value) || 0;
+      const q30 = parseFloat(document.getElementById('quickSalary30th').value) || 0;
+      const qBudget = parseFloat(document.getElementById('quickSalaryBudget').value) || 0;
+
+      const rows = document.querySelectorAll('#salaryModalInputsBody tr');
+      let updatedCount = 0;
+      rows.forEach(r => {
+        const input15 = r.querySelector('.sal-input-15th');
+        const input30 = r.querySelector('.sal-input-30th');
+        const inputBudget = r.querySelector('.sal-input-budget');
+
+        if (parseFloat(input15.value) === 0 && parseFloat(input30.value) === 0) {
+          input15.value = q15;
+          input30.value = q30;
+          if (parseFloat(inputBudget.value) === 0) {
+            inputBudget.value = qBudget;
+          }
+          updatedCount++;
+        }
+      });
+
+      alert(`Applied quick salary cutoffs to ${updatedCount} month rows! Click 'Save Salary Allocation' to confirm.`);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('tabSignInBtn').addEventListener('click', () => setAuthTab('signin'));
+      document.getElementById('tabRegisterBtn').addEventListener('click', () => setAuthTab('register'));
+
+      document.getElementById('signInForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+        const password = document.getElementById('loginPassword').value;
+
+        const user = auth.users.find(u => u.username.toLowerCase() === username && u.password === password);
+        if (user) {
+          loginUser(user);
+        } else {
+          showAuthAlert('Invalid username or password. Please try again.');
+        }
+      });
+
+      document.getElementById('quickDemoLoginBtn').addEventListener('click', () => {
+        let demoUser = auth.users.find(u => u.username === 'john');
+        if (!demoUser) {
+          demoUser = DEFAULT_USERS[0];
+          auth.users.push(demoUser);
+          localStorage.setItem('ag_auth_users', JSON.stringify(auth.users));
+        }
+        loginUser(demoUser);
+      });
+
+      document.getElementById('registerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fullName = document.getElementById('regFullName').value.trim();
+        const username = document.getElementById('regUsername').value.trim().toLowerCase();
+        const currency = document.getElementById('regCurrency').value;
+        const password = document.getElementById('regPassword').value;
+
+        if (auth.users.some(u => u.username.toLowerCase() === username)) {
+          showAuthAlert('That username is already taken. Please choose another.');
+          return;
+        }
+
+        const newUser = {
+          id: `usr_${Date.now()}`,
+          name: fullName,
+          username: username,
+          password: password,
+          currency: currency
+        };
+
+        auth.users.push(newUser);
+        localStorage.setItem('ag_auth_users', JSON.stringify(auth.users));
+
+        showAuthAlert(`Account created for ${fullName}! Logging in...`, false);
+        setTimeout(() => {
+          loginUser(newUser);
+        }, 600);
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to log out?')) {
+          logoutUser();
+        }
+      });
+
+      // View switcher
+      document.getElementById('viewModeCardBtn').addEventListener('click', () => setViewMode('dashboard'));
+      document.getElementById('viewModeSheetBtn').addEventListener('click', () => setViewMode('sheet'));
+
+      // Google Sheets modal handlers
+      document.getElementById('openSheetsModalBtn').addEventListener('click', openSheetsModal);
+      document.getElementById('closeSheetsModalBtn').addEventListener('click', closeSheetsModal);
+      document.getElementById('doneSheetsModalBtn').addEventListener('click', closeSheetsModal);
+
+      document.getElementById('testSaveSheetsBtn').addEventListener('click', async () => {
+        const url = document.getElementById('sheetsApiUrlInput').value.trim();
+        const testBtn = document.getElementById('testSaveSheetsBtn');
+        testBtn.textContent = 'Testing...';
+        testBtn.disabled = true;
+
+        const res = await testSheetsConnection(url);
+        testBtn.textContent = 'Connect & Test';
+        testBtn.disabled = false;
+
+        if (res.success) {
+          alert('Success! ' + res.message);
+        } else {
+          alert('Connection failed: ' + res.message);
+        }
+      });
+
+      document.getElementById('pullFromSheetBtn').addEventListener('click', pullFromGoogleSheet);
+      document.getElementById('pushToSheetBtn').addEventListener('click', pushAllToGoogleSheet);
+      document.getElementById('quickPullBtn').addEventListener('click', pullFromGoogleSheet);
+
+      document.getElementById('disconnectSheetsBtn').addEventListener('click', () => {
+        if (confirm('Disconnect Google Sheets and switch back to local offline storage?')) {
+          state.sheetsApiUrl = '';
+          state.sheetName = '';
+          state.sheetUrl = '';
+          localStorage.removeItem('ag_sheets_api_url');
+          localStorage.removeItem('ag_sheets_doc_name');
+          localStorage.removeItem('ag_sheets_doc_url');
+          updateSheetsUI(false);
+          closeSheetsModal();
+        }
+      });
+
+      document.getElementById('autoSyncCheck').addEventListener('change', (e) => {
+        state.autoSync = e.target.checked;
+        localStorage.setItem('ag_sheets_autosync', String(state.autoSync));
+      });
+
+      document.getElementById('copyAppsScriptBtn').addEventListener('click', () => {
+        const scriptCode = `// Google Apps Script Backend for Personal Budget & Expense Dashboard
+function doGet(e){return handleRequest(e);}
+function doPost(e){return handleRequest(e);}
+function handleRequest(e){
+  var lock = LockService.getScriptLock();
+  lock.tryLock(15000);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    initSheets(ss);
+    var action = (e && e.parameter && e.parameter.action) || 'read';
+    var postData = null;
+    if (e && e.postData && e.postData.contents) {
+      try { postData = JSON.parse(e.postData.contents); if (postData.action) action = postData.action; } catch(err){}
+    }
+    var result = { status: 'success' };
+    if (action === 'ping') {
+      result = { status: 'success', sheetName: ss.getName(), sheetUrl: ss.getUrl() };
+    } else if (action === 'read' || action === 'get_data') {
+      result = readUserData(ss, (e && e.parameter && e.parameter.userId) || (postData && postData.userId) || '');
+    } else if (action === 'add_transaction' || action === 'save_transaction') {
+      result = saveTransaction(ss, postData.transaction, postData.userId);
+    } else if (action === 'delete_transaction') {
+      result = deleteTransaction(ss, postData.transactionId, postData.userId);
+    } else if (action === 'sync_all' || action === 'push_all') {
+      result = syncAllData(ss, postData);
+    }
+    return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+function initSheets(ss) {
+  var txSheet = ss.getSheetByName('Transactions');
+  if (!txSheet) {
+    txSheet = ss.insertSheet('Transactions');
+    txSheet.appendRow(['ID', 'User ID', 'Date', 'Type', 'Category', 'Description', 'Amount', 'Payment Method', 'Notes', 'Created At']);
+    txSheet.getRange(1, 1, 1, 10).setFontWeight('bold').setBackground('#10b981').setFontColor('#ffffff');
+    txSheet.setFrozenRows(1);
+  }
+  var catSheet = ss.getSheetByName('Categories');
+  if (!catSheet) {
+    catSheet = ss.insertSheet('Categories');
+    catSheet.appendRow(['Category Name', 'Type', 'Monthly Budget Target', 'User ID']);
+    catSheet.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#6366f1').setFontColor('#ffffff');
+    catSheet.setFrozenRows(1);
+  }
+}
+function readUserData(ss, userId) {
+  var txSheet = ss.getSheetByName('Transactions');
+  var transactions = [];
+  var txData = txSheet.getDataRange().getValues();
+  for (var i = 1; i < txData.length; i++) {
+    var row = txData[i];
+    if (!row[0]) continue;
+    if (!userId || String(row[1]) === userId || !row[1]) {
+      transactions.push({ id: String(row[0]), date: formatDate(row[2]), type: String(row[3]).toLowerCase(), category: String(row[4]), desc: String(row[5]), amount: Number(row[6]), method: String(row[7]), notes: String(row[8]) });
+    }
+  }
+  return { status: 'success', sheetName: ss.getName(), sheetUrl: ss.getUrl(), transactions: transactions };
+}
+function saveTransaction(ss, tx, userId) {
+  var txSheet = ss.getSheetByName('Transactions');
+  var data = txSheet.getDataRange().getValues();
+  var found = -1;
+  for (var i = 1; i < data.length; i++) { if (String(data[i][0]) === String(tx.id)) { found = i + 1; break; } }
+  var row = [String(tx.id), userId || '', tx.date, tx.type, tx.category, tx.desc, Number(tx.amount), tx.method || 'Card', tx.notes || '', new Date()];
+  if (found > 0) txSheet.getRange(found, 1, 1, 10).setValues([row]); else txSheet.appendRow(row);
+  return { status: 'success' };
+}
+function deleteTransaction(ss, txId) {
+  var txSheet = ss.getSheetByName('Transactions');
+  var data = txSheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) { if (String(data[i][0]) === String(txId)) { txSheet.deleteRow(i + 1); return { status: 'success' }; } }
+  return { status: 'not_found' };
+}
+function syncAllData(ss, payload) {
+  var txSheet = ss.getSheetByName('Transactions');
+  var transactions = payload.transactions || [];
+  var rows = [['ID', 'User ID', 'Date', 'Type', 'Category', 'Description', 'Amount', 'Payment Method', 'Notes', 'Created At']];
+  transactions.forEach(function(tx){ rows.push([String(tx.id), payload.userId || '', tx.date, tx.type, tx.category, tx.desc, Number(tx.amount), tx.method || 'Card', tx.notes || '', new Date()]); });
+  txSheet.clearContents();
+  txSheet.getRange(1, 1, rows.length, 10).setValues(rows);
+  return { status: 'success', sheetName: ss.getName(), sheetUrl: ss.getUrl() };
+}
+function formatDate(val) { return (val instanceof Date) ? Utilities.formatDate(val, Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd') : String(val); }`;
+
+        navigator.clipboard.writeText(scriptCode).then(() => {
+          alert('Copied Google Apps Script code to clipboard! You can also find it in google_apps_script.js in your project folder.');
+        }).catch(() => {
+          alert('Code available in google_apps_script.js in your workspace folder.');
+        });
+      });
+
+      const currSelector = document.getElementById('currencySelector');
+      currSelector.addEventListener('change', (e) => {
+        state.currency = e.target.value;
+        savePersonalData();
+        refreshAll();
+      });
+
+      const monthSelector = document.getElementById('monthSelector');
+      monthSelector.value = state.selectedMonth;
+      monthSelector.addEventListener('change', (e) => {
+        state.selectedMonth = e.target.value;
+        refreshAll();
+      });
+
+      document.getElementById('filterCategory').addEventListener('change', (e) => {
+        state.filterCat = e.target.value;
+        renderTransactions();
+      });
+
+      document.getElementById('filterType').addEventListener('change', (e) => {
+        state.filterType = e.target.value;
+        renderTransactions();
+      });
+
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        state.searchQuery = e.target.value;
+        renderTransactions();
+      });
+
+      document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+      document.getElementById('resetDemoBtn').addEventListener('click', () => {
+        if (confirm(`Reset dashboard data for ${state.currentUser.name}? Any custom changes will be restored to defaults.`)) {
+          state.transactions = state.currentUser.id === 'usr_john' ? [...DEFAULT_TRANSACTIONS] : [];
+          state.budgets = state.currentUser.id === 'usr_john' ? { ...DEFAULT_BUDGETS } : { 'Housing': 800, 'Groceries': 300, 'Food & Dining': 200, 'Utilities': 150 };
+          state.expenseCategories = state.currentUser.id === 'usr_john' ? [...DEFAULT_EXPENSE_CATEGORIES] : ['Food & Dining', 'Groceries', 'Housing', 'Utilities'];
+          state.incomeCategories = [...DEFAULT_INCOME_CATEGORIES];
+          state.salaryMonths = JSON.parse(JSON.stringify(DEFAULT_SALARY_MONTHS));
+          state.salaryCollapsed = false;
+          savePersonalData();
+          refreshAll();
+          if (state.sheetsApiUrl && state.autoSync) pushAllToGoogleSheet();
+        }
+      });
+
+      document.getElementById('openCategoryModalBtn').addEventListener('click', openCategoryModal);
+      document.getElementById('closeCategoryModalBtn').addEventListener('click', closeCategoryModal);
+      document.getElementById('doneCategoryModalBtn').addEventListener('click', closeCategoryModal);
+
+      document.getElementById('createCategoryForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('newCategoryName').value;
+        const budget = document.getElementById('newCategoryBudget').value;
+        if (addNewExpenseCategory(name, budget)) {
+          document.getElementById('createCategoryForm').reset();
+        }
+      });
+
+      const quickAddBox = document.getElementById('inlineQuickAddBox');
+      const quickAddToggle = document.getElementById('quickAddCategoryToggle');
+      const quickInput = document.getElementById('quickCatInput');
+
+      quickAddToggle.addEventListener('click', () => {
+        quickAddBox.classList.toggle('hidden');
+        if (!quickAddBox.classList.contains('hidden')) {
+          quickInput.focus();
+        }
+      });
+
+      document.getElementById('quickCatCancelBtn').addEventListener('click', () => {
+        quickAddBox.classList.add('hidden');
+        quickInput.value = '';
+      });
+
+      document.getElementById('quickCatConfirmBtn').addEventListener('click', () => {
+        const catName = quickInput.value.trim();
+        if (catName) {
+          if (addNewExpenseCategory(catName, 0)) {
+            updateCategoryDropdowns(catName);
+            quickInput.value = '';
+            quickAddBox.classList.add('hidden');
+          }
+        }
+      });
+
+      quickInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('quickCatConfirmBtn').click();
+        }
+      });
+
+      document.getElementById('openAddModalBtn').addEventListener('click', () => openTransactionModal());
+      document.getElementById('closeModalBtn').addEventListener('click', closeTransactionModal);
+      document.getElementById('cancelModalBtn').addEventListener('click', closeTransactionModal);
+
+      document.getElementById('openBudgetModalBtn').addEventListener('click', openBudgetModal);
+      document.getElementById('closeBudgetModalBtn').addEventListener('click', closeBudgetModal);
+      document.getElementById('cancelBudgetBtn').addEventListener('click', closeBudgetModal);
+      document.getElementById('saveBudgetsBtn').addEventListener('click', saveCategoryBudgets);
+
+      document.getElementById('typeExpenseBtn').addEventListener('click', () => setFormType('expense'));
+      document.getElementById('typeIncomeBtn').addEventListener('click', () => setFormType('income'));
+
+      document.getElementById('transactionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const txId = document.getElementById('txId').value;
+        const newTx = {
+          id: txId || Date.now().toString(),
+          desc: document.getElementById('txDesc').value.trim(),
+          amount: parseFloat(document.getElementById('txAmount').value),
+          date: document.getElementById('txDate').value,
+          type: document.getElementById('txType').value,
+          category: document.getElementById('txCategory').value,
+          method: document.getElementById('txPaymentMethod').value,
+          notes: document.getElementById('txNotes').value.trim()
+        };
+
+        if (txId) {
+          const idx = state.transactions.findIndex(t => t.id === txId);
+          if (idx !== -1) state.transactions[idx] = newTx;
+        } else {
+          state.transactions.unshift(newTx);
+        }
+
+        savePersonalData();
+        closeTransactionModal();
+        refreshAll();
+
+        syncSingleTransactionToSheet(newTx);
+      });
+
+      // Salary Allocation Event Listeners
+      document.getElementById('openSalaryModalBtn').addEventListener('click', openSalaryModal);
+      document.getElementById('closeSalaryModalBtn').addEventListener('click', closeSalaryModal);
+      document.getElementById('cancelSalaryModalBtn').addEventListener('click', closeSalaryModal);
+      document.getElementById('saveSalarySettingsBtn').addEventListener('click', saveSalarySettings);
+      document.getElementById('resetSalaryDefaultsBtn').addEventListener('click', resetSalaryDefaults);
+      document.getElementById('applyQuickSalaryBtn').addEventListener('click', applyQuickSalary);
+      document.getElementById('toggleSalaryCollapseBtn').addEventListener('click', toggleSalaryCollapse);
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeTransactionModal();
+          closeBudgetModal();
+          closeCategoryModal();
+          closeSheetsModal();
+          closeSalaryModal();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (state.currentUser) {
+          renderDailyTrendChart();
+        }
+      });
+
+      if (auth.activeUserId) {
+        const found = auth.users.find(u => u.id === auth.activeUserId);
+        if (found) {
+          loginUser(found);
+          return;
+        }
+      }
+
+      setAuthTab('signin');
+    });
+  </script>
+</body>
+</html>
